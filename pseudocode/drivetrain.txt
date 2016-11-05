@@ -39,4 +39,7 @@ get acceleration on axis:
 limit:
     while true
         if absolute value speed < limit
-            speed = limit
+            speed *= limit/speed
+        else if abs(speed) > limit
+            speed *= limit/speed
+            
