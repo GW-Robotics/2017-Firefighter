@@ -1,0 +1,45 @@
+ultrasonic [8]
+encoder [6]
+gyro&acceleratometer
+motor [6]
+
+drive (forward_speed, rotation, strafe_speed):
+    left motors = forward_speed
+    right motors = forward_speed
+    
+    strafe motors = strafe_speed
+    
+    if rotation < 0
+        clockwise 
+        left motors = forward_speed
+        right motors = - forward_speed
+    else if rotation > 0
+        anticlockwise
+            right = forward_speed
+            left = -forward_speed
+            
+get ultrasonic in array:
+    return value of ultrasonic sensor at index
+
+get encoder in array:
+    return value of encoder at index
+
+get gyro rotation:
+    return value of gyro at index
+
+get acceleration on axis:
+    if x axis:
+        TODO: Stuff
+    if y axis:
+        TODO: Stuff
+    if z axis:
+        TODO: Stuff
+        
+        
+limit:
+    while true
+        if absolute value speed < limit
+            speed *= limit/speed
+        else if abs(speed) > limit
+            speed *= limit/speed
+            

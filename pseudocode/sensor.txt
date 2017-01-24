@@ -1,0 +1,10 @@
+pin_value [2]
+
+# y = mx + b
+m
+b
+
+get:
+    return m * voltage + b
+    
+    
