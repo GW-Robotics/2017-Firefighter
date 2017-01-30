@@ -1,17 +1,6 @@
 import robotmap
 
 from nanpy import ArduinoApi, SerialManager
-from sensors import FlameSensor
-
-connected_to_arduino = False
-
-try:
-    connection = SerialManager(device = '/dev/ttyACM0')
-    Arduino = ArduinoApi(connection = connection)
-    connected_to_arduino = True
-except:
-    connected_to_arduino = False
-    
 
 class FlameSensor(object):
 
