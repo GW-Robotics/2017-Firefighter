@@ -2,20 +2,21 @@ import robotmap
 
 from nanpy import ArduinoApi, SerialManager
 from sensors import FlameSensor
+from time import sleep
 
-#class FlameSensor(object):
-#
-#    def __init__(self, pin):
-#        self.sensor_pin = pin
-#        print 'Flame Sensor Connected To: ' + self.sensor_pin
-#
-#        Arduino.pinMode(self.sensor_pin, Arduino.INPUT)
-#
-#    def is_flame_detected(self):
-#        return Arduino.digitalRead(self.sensor_pin) == Arduino.HIGH
+try:
+    connection = SerialManager(device = '/dev/ttyACM0')
+    Arduino = ArduinoApi(connection = connection)
+except:
+    pass
 
+Arduino.pinMode(13, Arduino.OUTPUT)
 
 flamesensor = FlameSensor(robotmap.get_pin('input', 'flamesensor'))
 
 while (True):
     print flamesensor.is_flame_detected()
+    Arduino.digitalWrite(13, Arduino.HIGH)
+    sleep(0.3)
+    Arduino.digitalWrite(13, Arduino.LOW)
+    sleep(0.3)
