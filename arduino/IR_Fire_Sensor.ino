@@ -9,7 +9,9 @@ void setup() {
 }
 
 void loop() {
-  if(digitalRead(SensorPin) == HIGH)
+  Serial.print(digitalRead(SensorPin));
+  Serial.print(" ");
+  if(digitalRead(SensorPin) == LOW)
   {
     Serial.println("There is a Fire");
   }
