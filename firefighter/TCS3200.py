@@ -6,7 +6,11 @@ from nanpy import ArduinoApi, SerialManager
 #Python code for TCS3200 Color Sensor
 
 class ColorSensor(object):
-    a = ArduinoApi()
+    try:
+        connection = SerialManager(device = '/dev/ttyACM0')
+        a = ArduinoApi(connection = connection)
+    except:
+        pass
     def __init__(self, s0, s1, s2, s3, sensorOut):
         self.s0 = s0
         self.s1 = s1
