@@ -4,6 +4,7 @@ from nanpy import ArduinoApi, SerialManager
 from sensors import FlameSensor
 from time import sleep
 
+# Connects the arduino and the raspberry pi through serial
 try:
     connection = SerialManager(device = '/dev/ttyACM0')
     Arduino = ArduinoApi(connection = connection)
