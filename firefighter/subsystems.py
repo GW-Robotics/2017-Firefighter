@@ -61,3 +61,14 @@ class TestSubsystem(object):
         print ultrasonic.read_sensor()
         print colorSensor.get_color('b')
 
+
+
+class Drivetrain(object):
+
+    def __init__(self):
+        self.left_motor1 = Motor(12, 13)
+        self.left_motor2 = Motor(6, 7)
+
+    def move_forward(self):
+        self.left_motor1.set(1.0)
+        self.left_motor2.set(1.0)
