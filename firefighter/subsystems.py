@@ -38,37 +38,16 @@ class Motor(object):
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
 
 
-class TestSubsystem(object):
-
-    flamesensor = FlameSensor(robotmap.get_pin('input', 'flamesensor'))
-    ultrasonic = Sonar(50, 52, True)
-    colorSensor = ColorSensor(24, 26, 28, 30, 32)
-
-    
-    def __init__(self):
-        self.test_motor = Motor(8, 9)
-
-
-    def oscillate_motor(self):
-        self.test_motor.set(-1.0)
-        sleep(1)
-        self.test_motor.set(1.0)
-        sleep(1)
-
-
-    def sensor_test(self):
-        print flamesensor.is_flame_detected()
-        print ultrasonic.read_sensor()
-        print colorSensor.get_color('b')
-
-
-
 class Drivetrain(object):
 
     def __init__(self):
         self.left_motor1 = Motor(12, 13)
         self.left_motor2 = Motor(6, 7)
+        self.right_motor1 = Motor(2, 3)
+        self.right_motor2 = Motor(4, 5)
 
     def move_forward(self):
         self.left_motor1.set(1.0)
         self.left_motor2.set(1.0)
+        self.right_motor1.set(-1.0)
+        self.right_motor1.set(-1.0)
