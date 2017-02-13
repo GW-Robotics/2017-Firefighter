@@ -1,7 +1,5 @@
-from subsystems import TestSubsystem, Drivetrain
+from subsystems import Drivetrain
 
-
-testSubsystem = TestSubsystem()
 drivetrain = Drivetrain()
 
 while (True):
