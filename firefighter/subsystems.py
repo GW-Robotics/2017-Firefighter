@@ -45,9 +45,11 @@ class Drivetrain(object):
         self.left_motor2 = Motor(6, 7)
         self.right_motor1 = Motor(2, 3)
         self.right_motor2 = Motor(4, 5)
+        self.strafe_motor = Motor(8, 9)
 
     def move_forward(self):
         self.left_motor1.set(1.0)
         self.left_motor2.set(1.0)
         self.right_motor1.set(-1.0)
         self.right_motor1.set(-1.0)
+        self.strafe_motor.set(0.0)    # Here in case stafe wheel was previously moving
