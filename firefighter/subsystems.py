@@ -48,8 +48,12 @@ class Drivetrain(object):
         self.strafe_motor = Motor(8, 9)
 
     def move_forward(self):
+        # Sets left and right motors to forward
         self.left_motor1.set(1.0)
         self.left_motor2.set(1.0)
         self.right_motor1.set(-1.0)
         self.right_motor1.set(-1.0)
         self.strafe_motor.set(0.0)    # Here in case stafe wheel was previously moving
+
+    def arcade_drive(self, move_value, rotate_value):
+        pass
