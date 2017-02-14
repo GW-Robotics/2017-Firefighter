@@ -1,4 +1,5 @@
 import robotmap
+import robotmath
 
 from nanpy import ArduinoApi, SerialManager
 from sensors import FlameSensor, Sonar, ColorSensor
@@ -57,4 +58,30 @@ class Drivetrain(object):
 
     def arcade_drive(self, move_value, rotate_value):
         # Moves robot with a forward/backwards and rotation value
-        pass
+        
+        move_value = robotmath.make_within(move_value, -1.0, 1.0)
+        rotate_value = robotmath.make_within(rotate_value, -1.0, 1.0)
+
+        if move_value > 0.0:
+            if rotate_value > 0.0:
+                left_motor_speed = move_value - rotate_value
+                right_motor_speed = max(move_value, rotate_value)
+            else:
+                left_motor_speed = max(move_value, -rotate_value)
+                right_motor_speed = move_value + rotate_value
+        else:
+            if rotate_value > 0.0:
+                left_motor_speed = -max(-move_value, rotate_value)
+                right_motor_speed = move_value + rotate_value
+            else:
+                left_motor_speed = move_value - rotate_value
+                right_motor_speed = -max(-move_value, -rotate_value)
+
+        set_left_right_outputs(left_motor_speed, right_motor_speed)
+
+    def set_left_right_outputs(left_speed, right_speed):
+        self.left_motor1.set(left_speed)
+        self.left_motor2.set(left_speed)
+        self.right_motor1.set(-right_speed)
+        self.right_motor1.set(-right_speed)
+        self.strafe_motor.set(0.0)    # Here in case stafe wheel was previously moving
