@@ -56,4 +56,5 @@ class Drivetrain(object):
         self.strafe_motor.set(0.0)    # Here in case stafe wheel was previously moving
 
     def arcade_drive(self, move_value, rotate_value):
+        # Moves robot with a forward/backwards and rotation value
         pass
