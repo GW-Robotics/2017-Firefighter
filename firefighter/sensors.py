@@ -19,6 +19,7 @@ class FlameSensor(object):
 
     def is_flame_detected(self):
         return Arduino.digitalRead(self.pin) == Arduino.LOW
+		
     def is_flame_detected_LED(slef, LED_Pin):
         if(Arduino.digitalRead(self.pin) == Arduino.LOW):
             digitalWrite(LED_Pin,Arduino.HIGH)
