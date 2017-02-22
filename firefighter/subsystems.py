@@ -38,6 +38,19 @@ class Motor(object):
             Arduino.digitalWrite(self.pinA, Arduino.LOW)
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
 
+class StatusLight(object):
+
+    def __init__(self):
+        self.LED = 13
+        self.flame_sensor = FlameSensor(12)
+
+        Arduino.pinMode(self.LED, Arduino.OUTPUT)
+
+    def check_flame(self):
+        if self.flame_sensor.is_flame_detected():
+            Arduino.digitalWrite(self.LED, Arduino.HIGH)
+        else:
+            Arduino.digitalWrite(self.LED, Arduino.LOW)
 
 class Drivetrain(object):
 
