@@ -3,6 +3,7 @@ from time import sleep
 
 # Connects the arduino and the raspberry pi through serial
 try:
+#    connection = SerialManager(device = '/dev/ttyACM0')
     connection = SerialManager()
     Arduino = ArduinoApi(connection = connection)
 except:

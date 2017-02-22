@@ -1,13 +1,14 @@
 import robotmap
 import robotmath
 
-from nanpy import ArduinoApi, SerialManager
-from sensors import FlameSensor, Sonar, ColorSensor
+from nanpy import ArduinoApi, SerialManager, Servo
+from sensors import FlameSensor, LimitSwitch
 from time import sleep
 
 
 # Connects the arduino and the raspberry pi through serial
 try:
+#    connection = SerialManager(device = '/dev/ttyACM0')
     connection = SerialManager()
     Arduino = ArduinoApi(connection = connection)
 except:
@@ -51,6 +52,31 @@ class StatusLight(object):
             Arduino.digitalWrite(self.LED, Arduino.HIGH)
         else:
             Arduino.digitalWrite(self.LED, Arduino.LOW)
+
+
+class SensorStick(object):
+    
+    def __init__(self):
+        self.servo = Servo(24, connection)
+        self.switch = LimitSwitch(22)
+        self.out = (self.servo.read() > 100)
+
+    def switch_state(self):
+        return self.switch.get()
+
+    def servo_position(self):
+        return self.servo.read()
+
+    def check_actuation(self):
+        if self.switch.get():
+            if self.out == True:
+                self.servo.write(90)
+                self.out = False
+            else:
+                self.servo.write(180)
+                self.out = True
+        else:
+            pass
 
 class Drivetrain(object):
 
