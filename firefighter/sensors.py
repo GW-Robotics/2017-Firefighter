@@ -8,6 +8,19 @@ try:
 except:
     pass
 
+
+class LimitSwitch(object):
+# Sensor that detects touch
+
+    def __init__(self, pin):
+        self.pin = pin
+
+        Arduino.pinMode(self.pin, Arduino.INPUT)
+
+    def get(self):
+        return Arduino.digitalRead(self.pin) == Arduino.HIGH
+
+
 class FlameSensor(object):
 # Sensor that detects flames
 
