@@ -42,8 +42,8 @@ class Motor(object):
 class StatusLight(object):
 
     def __init__(self):
-        self.LED = 13
-        self.flame_sensor = FlameSensor(12)
+        self.LED = robotmap.get_pin('o', 'flame-led')
+        self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
 
         Arduino.pinMode(self.LED, Arduino.OUTPUT)
 
@@ -57,8 +57,8 @@ class StatusLight(object):
 class SensorStick(object):
     
     def __init__(self):
-        self.servo = Servo(24, connection)
-        self.switch = LimitSwitch(22)
+        self.servo = Servo(robotmap.get_pin('o', 'sensor-stick-servo'), connection)
+        self.switch = LimitSwitch(robotmap.get_pin('i', 'sensor-stick-switch'))
         self.out = (self.servo.read() > 100)
 
     def switch_state(self):
@@ -87,8 +87,12 @@ class Drivetrain(object):
         self.right_motor2 = Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
         self.strafe_motor = Motor(robotmap.get_pin('o', 'strafe-motor1a'), robotmap.get_pin('o', 'strafe-motor1a'))
 
+        self.front_switch = LimitSwitch(robotmap.get_pin('i', 'front-drive-switch'))
+        self.right_switch = LimitSwitch(robotmap.get_pin('i', 'right-drive-switch'))
+        self.left_switch = LimitSwitch(robotmap.get_pin('i', 'left-drive-switch'))
+
     def arcade_drive(self, move_value, rotate_value, strafe_value):
-        # Moves robot with a forward/backwards and rotation value
+        """Moves robot with a forward/backwards and rotation value"""
         
         move_value = robotmath.make_within(move_value, -1.0, 1.0)
         rotate_value = robotmath.make_within(rotate_value, -1.0, 1.0)
@@ -114,3 +118,17 @@ class Drivetrain(object):
         self.right_motor1.set(-right_motor_speed)
         self.right_motor2.set(-right_motor_speed)
         self.strafe_motor.set(strafe_value)
+
+    def navigate_maze(self):
+        """Simple Left-Handed Wall Follower Algorithm"""
+        
+        if self.front_switch.get():
+            arcade_drive(0.0, 0.0, -1.0)
+
+        if self.left_switch.get():
+            arcade_drive(0.0, 0.0, 1.0)
+
+        if self.right_switch.get():
+            arcade_drive(0.0, 1.0, 0.0)
+            sleep(1.0)
+            arcade_drive(1.0, 0.0, 0.0)
