@@ -83,8 +83,9 @@ class Drivetrain(object):
     def __init__(self):
         self.left_motor1 = Motor(robotmap.get_pin('o', 'left-motor1a'), robotmap.get_pin('o', 'left-motor1b'))
         self.left_motor2 = Motor(robotmap.get_pin('o', 'left-motor2a'), robotmap.get_pin('o', 'left-motor2b'))
-        self.right_motor1 = Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'))
+        #self.right_motor1 = Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'))
         self.right_motor2 = Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
+        self.right_motor1 = Motor(8, 9)
         self.strafe_motor = Motor(robotmap.get_pin('o', 'strafe-motor1a'), robotmap.get_pin('o', 'strafe-motor1a'))
 
         self.front_switch = LimitSwitch(robotmap.get_pin('i', 'front-drive-switch'))

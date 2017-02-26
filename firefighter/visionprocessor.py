@@ -58,7 +58,7 @@ while(1):
     edged = auto_canny(blurred)
     rectangles = contour_rectangles(edged)
 
-    cv2.drawContours(frame, rectangles, -1, (0, 255, 0), 3)
+    cv2.drawContours(frame, rectangles, -1, (255, 0, 0), 3)
     
     # for debugging only
     cv2.imshow('frame', frame)
