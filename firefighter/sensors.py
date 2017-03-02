@@ -3,29 +3,36 @@ from time import sleep
 
 # Connects the arduino and the raspberry pi through serial
 try:
+#    connection = SerialManager(device = '/dev/ttyACM0')
     connection = SerialManager()
     Arduino = ArduinoApi(connection = connection)
 except:
     pass
+
+
+class LimitSwitch(object):
+# Sensor that detects touch
+
+    def __init__(self, pin):
+        self.pin = pin
+
+        Arduino.pinMode(self.pin, Arduino.INPUT)
+
+    def get(self):
+        return Arduino.digitalRead(self.pin) == Arduino.HIGH
+
 
 class FlameSensor(object):
 # Sensor that detects flames
 
     def __init__(self, pin):
         self.pin = pin
-        print 'Flame Sensor Connected To: ' + self.pin
 
         Arduino.pinMode(self.pin, Arduino.INPUT)
 
     def is_flame_detected(self):
         return Arduino.digitalRead(self.pin) == Arduino.LOW
-    def is_flame_detected_LED(slef, LED_Pin):
-        if(Arduino.digitalRead(self.pin) == Arduino.LOW):
-            digitalWrite(LED_Pin,Arduino.HIGH)
-            return true
-        else:
-            digitalWrite(LED_Pin,Arduino.LOW)
-            return false
+
 
 class Sonar(object):
 # Sensor that finds distance from an object

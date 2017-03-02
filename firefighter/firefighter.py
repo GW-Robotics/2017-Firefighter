@@ -1,12 +1,24 @@
-from subsystems import Drivetrain
+from subsystems import Drivetrain, StatusLight, SensorStick
 from time import sleep
-import sensors
+
+import multiprocessing
+
+
+def worker():
+    print "Robot in running"
+    return
+
+p = multiprocessing.Process(target=worker)
+p.start()
+p.join()
 
 # H-drive drivetrain
 drivetrain = Drivetrain()
-FlameSensor = sensors.FlameSensor(12)#Flame Sensor Using Pin 12
-Flame_LED_Pin = 13#connect LED to pin 13
+sensor_stick = SensorStick()
+status_light = StatusLight()
+
 while (True):
-    FlameSensor.is_flame_detected_LED(13)
+    status_light.check_flame()
+    sensor_stick.check_actuation()
     drivetrain.arcade_drive(1.0, 0.0, 0.0)
-    time.sleep(.1)
+    sleep(.1)
