@@ -1,8 +1,8 @@
-from subsystems import Drivetrain, StatusLight, SensorStick
+from subsystems import Drivetrain, StatusLight
+#from subsystems import SensorStick    # SEAS Innovation Challenge subsystems
 from time import sleep
 
 import multiprocessing
-
 
 def worker():
     print "Robot in running"
@@ -14,7 +14,7 @@ p.join()
 
 # H-drive drivetrain
 drivetrain = Drivetrain()
-sensor_stick = SensorStick()
+# sensor_stick = SensorStick()
 status_light = StatusLight()
 
 while (True):
