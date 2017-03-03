@@ -6,9 +6,15 @@
 #define trig 8
 #define echo 7
 
+int unit = 0;//0 for cm, 1 for inches
 long duration, distance;
 
-void setup()
+void setUnit(int u)
+{
+  unit = (u == 1 ? 1 : u == 0 ? 0 : unit = unit);
+    
+}
+void setup()  
 {
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
@@ -26,8 +32,8 @@ void loop()
   digitalWrite(trig, LOW);
   duration = pulseIn(echo, HIGH);
 
-  String output = String(distCM()) + "," + String(distIn());
-  Serial.println(output);
+  
+  Serial.println(unit == 1 ? distIn() : distCM());
 
   delay(2000);
 }
