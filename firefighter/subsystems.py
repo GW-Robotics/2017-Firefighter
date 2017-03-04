@@ -1,7 +1,7 @@
 import robotmap
 import robotmath
 
-from nanpy import ArduinoApi, SerialManager, Servo, UltrasonicClass
+from nanpy import ArduinoApi, SerialManager, Servo, Ultrasonic
 from sensors import FlameSensor, LimitSwitch
 from time import sleep
 
@@ -87,7 +87,7 @@ class Drivetrain(object):
         self.right_motor2 = Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
         self.right_motor1 = Motor(8, 9)
         self.strafe_motor = Motor(robotmap.get_pin('o', 'strafe-motor1a'), robotmap.get_pin('o', 'strafe-motor1a'))
-        self.ultrasonic = UltrasonicClass(robotmap.get_pin('i', 'ultrasonic-trig'), robotmap.get_pin('i',  'ultrasonic-echo'))
+        self.ultrasonic = Ultrasonic(robotmap.get_pin('i', 'ultrasonic-echo'), robotmap.get_pin('i',  'ultrasonic-trig'), False)
         
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         """Moves robot with a forward/backwards and rotation value"""
@@ -121,7 +121,7 @@ class Drivetrain(object):
         return self.ultrasonic.get_distance()
 
     def is_in_range(self, low, high):
-        return self.ultrasonic.read_in_range(low, high)
+        return self.ultrasonic.reading_in_range(low, high)
         
 '''
     def navigate_maze(self):
