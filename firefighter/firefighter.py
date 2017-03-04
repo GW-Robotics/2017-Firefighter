@@ -21,4 +21,6 @@ while (True):
     status_light.check_flame()
     sensor_stick.check_actuation()
     drivetrain.arcade_drive(1.0, 0.0, 0.0)
+    print drivetrain.distance_fron_wall()
+    print drivetrian.is_in_range()
     sleep(.1)

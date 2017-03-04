@@ -1,7 +1,7 @@
 import robotmap
 import robotmath
 
-from nanpy import ArduinoApi, SerialManager, Servo
+from nanpy import ArduinoApi, SerialManager, Servo, UltrasonicClass
 from sensors import FlameSensor, LimitSwitch
 from time import sleep
 
@@ -87,11 +87,8 @@ class Drivetrain(object):
         self.right_motor2 = Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
         self.right_motor1 = Motor(8, 9)
         self.strafe_motor = Motor(robotmap.get_pin('o', 'strafe-motor1a'), robotmap.get_pin('o', 'strafe-motor1a'))
-
-        self.front_switch = LimitSwitch(robotmap.get_pin('i', 'front-drive-switch'))
-        self.right_switch = LimitSwitch(robotmap.get_pin('i', 'right-drive-switch'))
-        self.left_switch = LimitSwitch(robotmap.get_pin('i', 'left-drive-switch'))
-
+        self.ultrasonic = UltrasonicClass(robotmap.get_pin('i', 'ultrasonic-trig'), robotmap.get_pin('i',  'ultrasonic-echo'))
+        
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         """Moves robot with a forward/backwards and rotation value"""
         
@@ -120,6 +117,13 @@ class Drivetrain(object):
         self.right_motor2.set(-right_motor_speed)
         self.strafe_motor.set(strafe_value)
 
+    def distance_from_wall(self):
+        return self.ultrasonic.get_distance()
+
+    def is_in_range(self, low, high):
+        return self.ultrasonic.read_in_range(low, high)
+        
+'''
     def navigate_maze(self):
         """Simple Left-Handed Wall Follower Algorithm"""
         
@@ -133,3 +137,4 @@ class Drivetrain(object):
             arcade_drive(0.0, 1.0, 0.0)
             sleep(1.0)
             arcade_drive(1.0, 0.0, 0.0)
+'''
