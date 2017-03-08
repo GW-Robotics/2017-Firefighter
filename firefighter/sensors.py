@@ -33,47 +33,7 @@ class FlameSensor(object):
     def is_flame_detected(self):
         return Arduino.digitalRead(self.pin) == Arduino.LOW
 
-
-class Sonar(object):
-# Sensor that finds distance from an object
-
-    def __init__(self, trig, echo, useInches):
-        self.trig = trig
-        self.echo = echo
-        self.useInches = useInches
-
-        if useInches:
-            self.dist_conversion = 0.013504
-        else:
-            self.dist_conversion = 0.034
-        
-        Arduino.pinMode(self.trig, Arduino.OUTPUT)
-        Arduino.pinMode(self.echo, Arduino.INPUT)
-
-    def read_sensor(self):
-        #Used by get_cm and get_in, do not call this function
-        #Send low trigger
-        Arduino.digitalWrite(self.trig, Arduino.LOW)
-        sleep(0.0000002)    # 2 microsecond delay
-
-        #Send high trigger
-        Arduino.digitalWrite(self.trig, Arduino.HIGH)
-        sleep(0.000001)     # 10 microsecond delay
-
-        #Send another low trigger
-        Arduino.digitalWrite(self.trig,Arduino.LOW)
-
-        #receive the signal
-        return Arduino.pulseIn(self.echo, Arduino.HIGH)
     
-    def get_distance(self):
-        duration = self.read_sensor()
-        return duration / 2. * self.dist_conversion
-
-    def reading_in_range(self, low, high):
-        reading = self.get_distance()
-        return reading > low and reading < high
-
 class ColorSensor(object):
 
     def __init__(self, s0, s1, s2, s3, sensorOut):
