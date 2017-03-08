@@ -30,12 +30,21 @@ class Motor(object):
 
     def set(self, speed):
         if speed > 0.0:
+            if not pwm == -1:
+                Arduino.analogWrite(self.pwm, 255 * speed)
+            
             Arduino.digitalWrite(self.pinA, Arduino.HIGH)
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
         elif speed < 0.0:
+            if not pwm == -1:
+                Arduino.analogWrite(self.pwm, 255 * speed)
+            
             Arduino.digitalWrite(self.pinA, Arduino.LOW)
             Arduino.digitalWrite(self.pinB, Arduino.HIGH)
         else:
+            if not pwm == -1:
+                Arduino.analogWrite(self.pwm, 0)
+            
             Arduino.digitalWrite(self.pinA, Arduino.LOW)
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
 
