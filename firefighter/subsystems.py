@@ -3,6 +3,7 @@ import robotmath
 
 from nanpy import ArduinoApi, SerialManager, Servo, Ultrasonic
 from sensors import FlameSensor, LimitSwitch
+from gwrobolib import Motor, RobotDrive
 from time import sleep
 
 
@@ -14,30 +15,6 @@ try:
 except:
     pass
 
-
-class Motor(object):
-
-    def __init__(self, pinA, pinB, pwm = -1):
-        self.pinA = pinA
-        self.pinB = pinB
-        self.pwm = pwm
-
-        Arduino.pinMode(self.pinA, Arduino.OUTPUT)
-        Arduino.pinMode(self.pinB, Arduino.OUTPUT)
-
-        if not pwm == -1:
-            Arduino.pinMode(self.pwm, Arduino.OUTPUT)
-
-    def set(self, speed):
-        if speed > 0.0:
-            Arduino.digitalWrite(self.pinA, Arduino.HIGH)
-            Arduino.digitalWrite(self.pinB, Arduino.LOW)
-        elif speed < 0.0:
-            Arduino.digitalWrite(self.pinA, Arduino.LOW)
-            Arduino.digitalWrite(self.pinB, Arduino.HIGH)
-        else:
-            Arduino.digitalWrite(self.pinA, Arduino.LOW)
-            Arduino.digitalWrite(self.pinB, Arduino.LOW)
 
 class StatusLight(object):
 
@@ -77,64 +54,37 @@ class SensorStick(object):
                 self.out = True
         else:
             pass
+        
 
 class Drivetrain(object):
 
+    target_wall_distance = 2    # When ultrasonic is triggered by the wall (in inches)
+
     def __init__(self):
-        self.left_motor1 = Motor(robotmap.get_pin('o', 'left-motor1a'), robotmap.get_pin('o', 'left-motor1b'))
-        self.left_motor2 = Motor(robotmap.get_pin('o', 'left-motor2a'), robotmap.get_pin('o', 'left-motor2b'))
-        #self.right_motor1 = Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'))
-        self.right_motor2 = Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
-        self.right_motor1 = Motor(8, 9)
-        self.strafe_motor = Motor(robotmap.get_pin('o', 'strafe-motor1a'), robotmap.get_pin('o', 'strafe-motor1a'))
-        self.ultrasonic = Ultrasonic(robotmap.get_pin('i', 'ultrasonic-echo'), robotmap.get_pin('i',  'ultrasonic-trig'), False)
-        
+        self.drivetrain = RobotDrive(Motor(robotmap.get_pin('o', 'left-motor1a'), robotmap.get_pin('o', 'left-motor1b'), robotmap.get_pin('o', 'left-motor1p'))
+                                     , Motor(robotmap.get_pin('o', 'left-motor2a'), robotmap.get_pin('o', 'left-motor2b'), robotmap.get_pin('o', 'left-motor2p'))
+                                     , Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'), robotmap.get_pin('o', 'right-motor1p'))
+                                     , Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'), robotmap.get_pin('o', 'right-motor2p'))
+                                     , Motor(robotmap.get_pin('o', 'strafe-motora'), robotmap.get_pin('o', 'strafe-motorb'), robotmap.get_pin('o', 'strafe-motorp')))
+
+        self.front_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'front-ultrasonic-e'), robotmap.get_pin('i', 'front-ultrasonic-t'), True)
+        self.left_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'left-ultrasonic-e'), robotmap.get_pin('i', 'left-ultrasonic-t'), True)
+        self.right_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'right-ultrasonic-e'), robotmap.get_pin('i', 'right-ultrasonic-t'), True)
+        self.back_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'back-ultrasonic-e'), robotmap.get_pin('i', 'back-ultrasonic-t'), True)
+
     def arcade_drive(self, move_value, rotate_value, strafe_value):
-        """Moves robot with a forward/backwards and rotation value"""
+        self.drivetrain.h_drive(move_value, rotate_value, strafe_value)
         
-        move_value = robotmath.make_within(move_value, -1.0, 1.0)
-        rotate_value = robotmath.make_within(rotate_value, -1.0, 1.0)
-        strafe_value = robotmath.make_within(strafe_value, -1.0, 1.0)
-        
-        if move_value > 0.0:
-            if rotate_value > 0.0:
-                left_motor_speed = move_value - rotate_value
-                right_motor_speed = max(move_value, rotate_value)
-            else:
-                left_motor_speed = max(move_value, -rotate_value)
-                right_motor_speed = move_value + rotate_value
-        else:
-            if rotate_value > 0.0:
-                left_motor_speed = -max(-move_value, rotate_value)
-                right_motor_speed = move_value + rotate_value
-            else:
-                left_motor_speed = move_value - rotate_value
-                right_motor_speed = -max(-move_value, -rotate_value)
-
-        self.left_motor1.set(left_motor_speed)
-        self.left_motor2.set(left_motor_speed)
-        self.right_motor1.set(-right_motor_speed)
-        self.right_motor2.set(-right_motor_speed)
-        self.strafe_motor.set(strafe_value)
-
-    def distance_from_wall(self):
-        return self.ultrasonic.get_distance()
-
-    def is_in_range(self, low, high):
-        return self.ultrasonic.reading_in_range(low, high)
-        
-'''
     def navigate_maze(self):
         """Simple Left-Handed Wall Follower Algorithm"""
         
-        if self.front_switch.get():
+        if self.front_ultrasonic.reading_in_range(0, self.target_wall_distance):
             arcade_drive(0.0, 0.0, -1.0)
 
-        if self.left_switch.get():
+        if self.left_ultrasonic.reading_in_range(0, self.target_wall_distance):
             arcade_drive(0.0, 0.0, 1.0)
 
-        if self.right_switch.get():
+        if self.right_ultrasonic.reading_in_range(0, self.target_wall_distance):
             arcade_drive(0.0, 1.0, 0.0)
             sleep(1.0)
             arcade_drive(1.0, 0.0, 0.0)
-'''

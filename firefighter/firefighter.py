@@ -18,8 +18,7 @@ drivetrain = Drivetrain()
 status_light = StatusLight()
 
 while (True):
-    status_light.check_flame()
-#    sensor_stick.check_actuation()
-    drivetrain.arcade_drive(1.0, 0.0, 0.0)
-    print drivetrain.distance_from_wall()
+    #status_light.check_flame()
+    #sensor_stick.check_actuation()
+    drivetrain.arcade_drive(0.5, 0.0, 0.0)
     sleep(.1)
