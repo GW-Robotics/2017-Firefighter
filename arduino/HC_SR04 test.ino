@@ -46,5 +46,4 @@ float distCM()
 float distIn()
 {
   return duration / 2. * .013504;
-}
-
+}
