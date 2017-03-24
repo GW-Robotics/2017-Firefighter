@@ -88,3 +88,15 @@ class Drivetrain(object):
             arcade_drive(0.0, 1.0, 0.0)
             sleep(1.0)
             arcade_drive(1.0, 0.0, 0.0)
+
+
+class Test(object):
+
+    def __init__(self):
+        self.testmotor = Motor(2, 3)
+
+    def move(self):
+        self.testmotor.set(1.0)
+
+    def stop(self):
+        self.testmotor.set(0.0)

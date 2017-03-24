@@ -29,22 +29,16 @@ class Motor(object):
         print "Motor created at [{}, {}, {}]...".format(self.pinA, self.pinB, self.pwm)
 
     def set(self, speed):
-        if speed > 0.0:
-            if not self.pwm == -1:
-                Arduino.analogWrite(self.pwm, 255 * speed)
+        if not self.pwm == -1:
+            Arduino.analogWrite(self.pwm, 255 * abs(speed))
             
+        if speed > 0.0:
             Arduino.digitalWrite(self.pinA, Arduino.HIGH)
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
         elif speed < 0.0:
-            if not self.pwm == -1:
-                Arduino.analogWrite(self.pwm, 255 * speed)
-            
             Arduino.digitalWrite(self.pinA, Arduino.LOW)
             Arduino.digitalWrite(self.pinB, Arduino.HIGH)
         else:
-            if not self.pwm == -1:
-                Arduino.analogWrite(self.pwm, 0)
-            
             Arduino.digitalWrite(self.pinA, Arduino.LOW)
             Arduino.digitalWrite(self.pinB, Arduino.LOW)
 
