@@ -9,4 +9,7 @@ def are_same_sign(x, y):
 
 def get_percent_error(current, goal):
     # Returns a decimal value -1.0 to 1.0 for correction
-    return (current - goal) / goal
+    return abs(current - goal) / goal
+
+def map(x, from_low, from_high, to_low, to_high):
+    return (x - from_low) * (to_high - to_low) // (from_high - from_low) + to_low
