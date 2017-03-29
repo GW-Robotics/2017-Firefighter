@@ -1,11 +1,7 @@
-#include "cfg.h"
-
-#if USE_ColorSensor
-
 #include "ColorSensor.h"
 #include <Arduino.h>
 
-nanpy::ColorSensor::ColorSensor(int s0Pin, int s1Pin, int s2Pin, int s3Pin, int sensorOutPin) {
+ColorSensor::ColorSensor(int s0Pin, int s1Pin, int s2Pin, int s3Pin, int sensorOutPin) {
   s0 = s0Pin;
   s1 = s1Pin;
   s2 = s2Pin;
@@ -22,7 +18,7 @@ nanpy::ColorSensor::ColorSensor(int s0Pin, int s1Pin, int s2Pin, int s3Pin, int 
   digitalWrite(s1, LOW);
 }
 
-int nanpy::ColorSensor::getColor(char color) {
+int ColorSensor::getColor(char color) {
   if (color == 'r') {
     digitalWrite(s2, HIGH);
     digitalWrite(s3, LOW);
@@ -36,5 +32,3 @@ int nanpy::ColorSensor::getColor(char color) {
 
   return pulseIn(sensorOut, LOW);
 }
-
-#endif

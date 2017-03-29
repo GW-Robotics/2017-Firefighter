@@ -1,11 +1,7 @@
-#include "cfg.h"
-
-#if USE_Ultrasonic
-
 #include "Ultrasonic.h"
 #include <Arduino.h>
 
-nanpy::Ultrasonic::Ultrasonic(int echoPin, int trigPin, bool useInches) {
+Ultrasonic::Ultrasonic(int echoPin, int trigPin, bool useInches) {
     echo = echoPin;
     trig = trigPin;
     
@@ -19,7 +15,7 @@ nanpy::Ultrasonic::Ultrasonic(int echoPin, int trigPin, bool useInches) {
 		pinMode(trig, OUTPUT);
 	}
 
-float nanpy::Ultrasonic::getDistance() {
+float Ultrasonic::getDistance() {
 	// Code goes here for getDistance()
   int duration;
   float distance;
@@ -44,5 +40,3 @@ float nanpy::Ultrasonic::getDistance() {
 	
 	return distance;	
 }
-
-#endif

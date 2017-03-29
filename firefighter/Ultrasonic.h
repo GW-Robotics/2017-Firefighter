@@ -1,12 +1,15 @@
-namespace nanpy {
+#ifndef ColorSensor_h
+#define ColorSensor_h
 
-	class Ultrasonic {
+#include "Arduino.h"
+
+class Ultrasonic {
+	private:
+		int echo, trig, conversionFactor;
 		
-		private:
-			int echo, trig, conversionFactor;
-			
-		public:
-			Ultrasonic(int echoPin, int trigPin, bool useInches);
-			float getDistance();
-	};
-}
+	public:
+		Ultrasonic(int echoPin, int trigPin, bool useInches);
+		float getDistance();
+};
+
+#endif
