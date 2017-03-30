@@ -1,5 +1,6 @@
 #include "Motor.h"
 #include "colorSensor.h"
+#include "servo.h"
 
 Motor leftMotor1(2, 3);
 Motor leftMotor2(4, 5);
@@ -7,7 +8,8 @@ Motor rightMotor1(6, 7);
 Motor rightMotor2(8, 9);
 Motor strafeMotor(10, 11);
 ColorSensor colour_sensor(44, 46, 48, 50, 52);
-
+#define servo_pin 45
+#define fire_sensor 47
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
   
@@ -42,8 +44,24 @@ void hDrive(double move, double rotate, double strafe) {
 
 void setup() {
   Serial.begin(9600);
+  pinMode(servo_pin, OUTPUT);
+  pinMode(fire_sensor, INPUT);
  }
-
+ 
+void scanForFire(){
+  servo_pin.write(0);
+  for(int i = 0; i <= 180;i += 10){
+    if(digitalRead(fire_sensor)){
+      delay(10);//make sure that the reading isn't a false positive
+      while(digitalRead(fire_sensor))
+      {
+        //Turn on extinguisher
+        delay(50);
+      }
+    }
+    break;
+  }
+}
 int btn = 0;
 void loop() {
   
