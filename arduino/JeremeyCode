@@ -1,0 +1,56 @@
+
+  // 3 controllers
+  //listed from front
+  //controller1
+  int controller1A1 = 13;
+  int controller1A2 = 12;
+  
+  int controller1B1 = 11;
+  int controller1B2 = 10;
+  
+  //controller2
+  int controller2A1 = 9;
+  int controller2A2 = 8;
+  
+  int controller2B1 = 7;
+  int controller2B2 = 6;
+  
+  //controller3
+  int controller3A1 = 5;
+  int controller3A2 = 4;
+  
+  int controller3B1 = 3;
+  int controller3B2 = 2;
+  
+  void setup(){
+  // set all the motor control pins to outputs
+  pinMode(controller1A1, OUTPUT);
+  pinMode(controller1A2, OUTPUT);
+  pinMode(controller1B1, OUTPUT);
+  pinMode(controller1B2, OUTPUT);
+  
+  pinMode(controller2A1, OUTPUT);
+  pinMode(controller2A2, OUTPUT);
+  pinMode(controller2B1, OUTPUT);
+  pinMode(controller2B2, OUTPUT);
+
+  pinMode(controller3A1, OUTPUT);
+  pinMode(controller3A2, OUTPUT);
+  pinMode(controller3B1, OUTPUT);
+  pinMode(controller3B2, OUTPUT);
+
+  
+}
+//all motors on forward
+  void fullForward(int del){
+    digitalWrite(controller1A1, HIGH);
+    digitalWrite(controller1A2, LOW);
+    delay(del);
+
+  }
+void loop()
+{
+
+ 
+}
+
