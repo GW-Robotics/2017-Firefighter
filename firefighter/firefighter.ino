@@ -1,15 +1,28 @@
 #include "Motor.h"
+#include "Ultrasonic.h"
 #include "colorSensor.h"
 #include "servo.h"
+
+#define WALL_DISTANCE 5
 
 Motor leftMotor1(2, 3);
 Motor leftMotor2(4, 5);
 Motor rightMotor1(6, 7);
 Motor rightMotor2(8, 9);
 Motor strafeMotor(10, 11);
+
 ColorSensor colour_sensor(44, 46, 48, 50, 52);
 #define servo_pin 45
 #define fire_sensor 47
+
+Ultrasonic frontUltrasonic(22, 23, true);
+Ultrasonic leftUltrasonic(24, 25, true);
+Ultrasonic rightUltrasonic(26, 27, true);
+Ultrasonic backUltrasonic(28, 29, true);
+
+void driveToWhite();
+void driveThroughRoom();
+
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
   
@@ -62,6 +75,7 @@ void scanForFire(){
     break;
   }
 }
+
 int btn = 0;
 void loop() {
   
@@ -74,24 +88,9 @@ void loop() {
       //hDrive(1.0, 0.0, 0.0);
       delay(100);
       
-      int ri = colour_sensor.getColor('r');
-      int r = ri;
-      int g = colour_sensor.getColor('g');
-      int b = colour_sensor.getColor('b');
-      String colour = String(ri) + " " + String(g) + " " + String(b);
-      Serial.println(colour);
-      hDrive(.3,0,0);
-      while(r > ri - 30)
-      {
-        
-        r = colour_sensor.getColor('r');
-        String colour = String(r);
-        Serial.println(colour);
-      }
-      Serial.println("Done");
-      hDrive(0.0, 0.0, 0.0);
-      btn = 1;
+      driveToWhite()
       
+      btn = 1;
     }
     else{
       hDrive(0.0, 0.0, 0.0);
@@ -100,3 +99,39 @@ void loop() {
   
   }
 }
+
+void driveToWhite() {
+  int ri = colour_sensor.getColor('r');
+  int r = ri;
+  int g = colour_sensor.getColor('g');
+  int b = colour_sensor.getColor('b');
+//      String colour = String(ri) + " " + String(g) + " " + String(b);
+//      Serial.println(colour);
+  hDrive(.3,0,0);
+  
+  while(r > ri - 30) { 
+    r = colour_sensor.getColor('r');
+//        String colour = String(r);
+//        Serial.println(colour);
+  }
+  
+//      Serial.println("Done");
+  hDrive(0.0, 0.0, 0.0);
+}
+
+void driveThroughRoom() {
+  if (frontUltrasonic.get_distance() < WALL_DISTANCE) {
+    if (leftUltrasonic.get_distance() < WALL_DISTANCE) {
+      hDrive(0.0, 0.0, 1.0);
+    } else {
+      hDrive(0.0, 0.0, -1.0);
+    }
+  } else {
+    if (leftUltrasonic.get_distance() < WALL_DISTANCE) {
+      hDrive(0.0, 0.0, 1.0);
+    } else {
+      hDrive(0.0, 0.0, -1.0);
+    }
+  }
+}
+
