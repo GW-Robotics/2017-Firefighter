@@ -8,11 +8,11 @@
 #define servo_pin 45
 #define fire_sensor 47
 
-Motor leftMotor1(2, 3);
-Motor leftMotor2(4, 5);
-Motor rightMotor1(6, 7);
-Motor rightMotor2(8, 9);
-Motor strafeMotor(10, 11);
+Motor leftMotor1(3, 4);
+Motor leftMotor2(5, 6);
+Motor rightMotor1(7, 8);
+Motor rightMotor2(9, 10);
+Motor strafeMotor(11, 12);
 
 ColorSensor colour_sensor(44, 46, 48, 50, 52);
 
@@ -40,7 +40,7 @@ int btn = 0;
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(digitalRead(21)){
+  if(digitalRead(13)){
     delay(100);
     
     if(!btn){
