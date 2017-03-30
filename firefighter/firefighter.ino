@@ -1,16 +1,12 @@
 #include "Motor.h"
-#include "Ultrasonic.h"
+#include "colorSensor.h"
 
-Motor leftMotor1(12, 13);
+Motor leftMotor1(2, 3);
 Motor leftMotor2(4, 5);
 Motor rightMotor1(6, 7);
 Motor rightMotor2(8, 9);
 Motor strafeMotor(10, 11);
-
-Ultrasonic frontUltrasonic(22, 23, true);
-Ultrasonic leftUltrasonic(24, 25, true);
-Ultrasonic rightUltrasonic(26, 27, true);
-Ultrasonic backUltrasonic(28, 29, true);
+ColorSensor colour_sensor(44, 46, 48, 50, 52);
 
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
@@ -45,14 +41,44 @@ void hDrive(double move, double rotate, double strafe) {
 }
 
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(9600);
-}
+ }
 
+int btn = 0;
 void loop() {
+  
   // put your main code here, to run repeatedly:
-  //hDrive(1.0, 0.0, 0.0);
-  Serial.println(1.0);
-  delay(400);
+  if(digitalRead(21)){
+    delay(100);
+    Serial.println("pressed");
+    
+    if(!btn){
+      //hDrive(1.0, 0.0, 0.0);
+      delay(100);
+      
+      int ri = colour_sensor.getColor('r');
+      int r = ri;
+      int g = colour_sensor.getColor('g');
+      int b = colour_sensor.getColor('b');
+      String colour = String(ri) + " " + String(g) + " " + String(b);
+      Serial.println(colour);
+      hDrive(.3,0,0);
+      while(r > ri - 30)
+      {
+        
+        r = colour_sensor.getColor('r');
+        String colour = String(r);
+        Serial.println(colour);
+      }
+      Serial.println("Done");
+      hDrive(0.0, 0.0, 0.0);
+      btn = 1;
+      
+    }
+    else{
+      hDrive(0.0, 0.0, 0.0);
+      btn = 0;
+    }
+  
+  }
 }
-
