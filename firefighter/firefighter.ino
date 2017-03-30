@@ -1,10 +1,10 @@
 #include "Motor.h"
 
-Motor leftMotor1(2, 3, 4);
-Motor leftMotor2(5, 6, 7);
-Motor rightMotor1(8, 9, 10);
-Motor rightMotor2(11, 12 , 13);
-Motor strafeMotor(40, 42, 44);
+Motor leftMotor1(2, 3);
+Motor leftMotor2(4, 5);
+Motor rightMotor1(6, 7);
+Motor rightMotor2(8, 9);
+Motor strafeMotor(10, 11);
 
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
