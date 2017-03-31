@@ -193,15 +193,30 @@ void loop() {
   }
 
   if(btn){
-    Serial.println(pulseRight);
-  //      driveToWhite()
-    definedStartSearch();
+//    Serial.println(pulseRight);
+//    definedStartSearch();
+    Serial.println("====================================");
+    Serial.print("F: ");
+    Serial.println(frontUltrasonic.getDistance());
+    Serial.print("L: ");
+    Serial.println(leftUltrasonic.getDistance());
+    Serial.print("R: ");
+    Serial.println(rightUltrasonic.getDistance());
+    Serial.print("B: ");
+    Serial.println(backUltrasonic.getDistance());
+    delay(300);
   }
   else{
     hDrive(0.0, 0.0, 0.0);
   }
 
   delay(100);
+}
+
+void drivetrainCheck() {
+  hDrive(0.3, 0.0, 0.0); delay(300); hDrive(-0.3, 0.0, 0.0); delay(300);
+  hDrive(0.0, 0.3, 0.0); delay(300); hDrive(0.0, -0.3, 0.0); delay(300);
+  hDrive(0.0, 0.0, 0.3); delay(300); hDrive(0.0, 0.0, -0.3); delay(300);
 }
 
 void driveToWhite() {
@@ -296,3 +311,19 @@ void countPulseLeft() {
   if(!directionLeft)  pulseLeft++;
   else  pulseLeft--;
 }
+
+double getAngle() {
+  return ((pulseLeft - pulseRight) * 12.5 / 700) / 8;
+}
+
+double getPercentError(double actual, double target) {
+  return abs(actual - target) / target;
+}
+
+void turnToAngle(double targetAngle) {
+  while (abs(getAngle()) < abs(targetAngle)) {
+    hDrive(0.0, getPercentError(getAngle(), targetAngle), 0.0);
+  }
+  hDrive(0.0, 0.0, 0.0);
+}
+
