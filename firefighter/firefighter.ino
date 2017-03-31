@@ -1,11 +1,15 @@
 #include "Motor.h"
+#include "colorSensor.h"
+#include "servo.h"
 
-Motor leftMotor1(2, 3, 4);
-Motor leftMotor2(5, 6, 7);
-Motor rightMotor1(8, 9, 10);
-Motor rightMotor2(11, 12 , 13);
-Motor strafeMotor(40, 42, 44);
-
+Motor leftMotor1(2, 3);
+Motor leftMotor2(4, 5);
+Motor rightMotor1(6, 7);
+Motor rightMotor2(8, 9);
+Motor strafeMotor(10, 11);
+ColorSensor colour_sensor(44, 46, 48, 50, 52);
+#define servo_pin 45
+#define fire_sensor 47
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
   
@@ -39,10 +43,60 @@ void hDrive(double move, double rotate, double strafe) {
 }
 
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(servo_pin, OUTPUT);
+  pinMode(fire_sensor, INPUT);
+ }
+ 
+void scanForFire(){
+  servo_pin.write(0);
+  for(int i = 0; i <= 180;i += 10){
+    if(digitalRead(fire_sensor)){
+      delay(10);//make sure that the reading isn't a false positive
+      while(digitalRead(fire_sensor))
+      {
+        //Turn on extinguisher
+        delay(50);
+      }
+    }
+    break;
+  }
 }
-
+int btn = 0;
 void loop() {
+  
   // put your main code here, to run repeatedly:
-  hDrive(1.0, 0.0, 0.0);
+  if(digitalRead(21)){
+    delay(100);
+    Serial.println("pressed");
+    
+    if(!btn){
+      //hDrive(1.0, 0.0, 0.0);
+      delay(100);
+      
+      int ri = colour_sensor.getColor('r');
+      int r = ri;
+      int g = colour_sensor.getColor('g');
+      int b = colour_sensor.getColor('b');
+      String colour = String(ri) + " " + String(g) + " " + String(b);
+      Serial.println(colour);
+      hDrive(.3,0,0);
+      while(r > ri - 30)
+      {
+        
+        r = colour_sensor.getColor('r');
+        String colour = String(r);
+        Serial.println(colour);
+      }
+      Serial.println("Done");
+      hDrive(0.0, 0.0, 0.0);
+      btn = 1;
+      
+    }
+    else{
+      hDrive(0.0, 0.0, 0.0);
+      btn = 0;
+    }
+  
+  }
 }
