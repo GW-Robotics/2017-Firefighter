@@ -8,6 +8,13 @@
 
 #define WALL_DISTANCE 7
 
+#define flame_sensor 30
+#define servo_pin 31
+#define interval 10
+
+Motor fan_motor(50,51);
+Servo extingusher_servo;
+
 Motor leftMotor1(3, 4);
 Motor leftMotor2(5, 6);
 Motor rightMotor1(7, 8);
@@ -49,11 +56,13 @@ bool directionLeft;
 double getAngle();
 
 // Sound Sensor
-int sensorPin = A0;    
-int ledPin = 13;      
+int sensorPin = A0;   
 int sensorValue = 0;
 bool robotOn = false;
 bool soundStart();
+
+// Extinguisher
+void extinguish();
 
 void setup() {
   Serial.begin(9600);
@@ -73,25 +82,33 @@ void setup() {
   attachInterrupt(4, countPulseLeft, CHANGE);
   
   // Sound Sensor
-  pinMode(ledPin, OUTPUT);
   pinMode(sensorPin, INPUT);
+
+  // Extinguisher
+  pinMode(flame_sensor, INPUT);
+
+  extingusher_servo.attach(servo_pin);
+  extingusher_servo.write(0);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if (soundStart() || digitalRead(13)) {
+    digitalWrite(SOUND_LED, HIGH);
     robotOn = !robotOn;
   }
+
+  delay(300);
 
   if(robotOn){
 //    Serial.println(pulseRight);
 //    definedStartSearch();
-     digitalWrite(SOUND_LED, HIGH);
-	  digitalWrite(FLAME_LED, HIGH);
-	  delay(1000);
-	 digitalWrite(SOUND_LED, LOW);
-	  digitalWrite(FLAME_LED, LOW);
-	  delay(1000);
+//	  digitalWrite(FLAME_LED, HIGH);
+//	  delay(1000);
+//	  
+//	  digitalWrite(FLAME_LED, LOW);
+//	  delay(1000);
+    extinguish();
   }
   else{
     hDrive(0.0, 0.0, 0.0);
@@ -254,5 +271,43 @@ void turnToAngle(double targetAngle) {
     hDrive(0.0, getPercentError(getAngle(), targetAngle), 0.0);
   }
   hDrive(0.0, 0.0, 0.0);
+}
+
+void extinguish() {
+  for(int i = 0; i <= 180; i += interval){
+    extingusher_servo.write(i);
+    delay(15*interval);//give time for servo to move
+
+    if(!digitalRead(flame_sensor))
+      digitalWrite(FLAME_LED, HIGH);
+  
+    //turn on fan
+    fan_motor.set(1);
+    while(!digitalRead(flame_sensor)){
+      //while there is a fire
+      delay(1000);   
+    }
+    //turn off fan
+    fan_motor.set(0);
+    digitalWrite(FLAME_LED, LOW);  
+  }
+  
+  for(int i = 180; i >=0; i -= interval){
+    extingusher_servo.write(i);
+    delay(15*interval);//give time for servo to move
+
+    if(!digitalRead(flame_sensor))
+      digitalWrite(FLAME_LED, HIGH);
+  
+    //turn on fan
+    fan_motor.set(1);
+    while(!digitalRead(flame_sensor)){
+      //while there is a fire
+      delay(1000);   
+    }
+    //turn off fan
+    fan_motor.set(0);
+    digitalWrite(FLAME_LED, LOW);  
+  }
 }
 
