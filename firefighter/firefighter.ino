@@ -1,10 +1,12 @@
 #include "Ultrasonic.h"
 #include "ColorSensor.h"
+#include "Motor.h"
 #include <Servo.h>
 
-#define WALL_DISTANCE 5
-#define servo_pin 45
-#define fire_sensor 47
+#define FLAME_LED 53
+#define SOUND_LED 52
+
+#define WALL_DISTANCE 7
 
 Motor leftMotor1(3, 4);
 Motor leftMotor2(5, 6);
@@ -29,9 +31,6 @@ double getAngle(double targetAngle);
 double getPercentError(double actual, double target);
 void turnToAngle(double targetAngle);
 
-// Extinguisher commands
-void scanForFire();
-
 // Encoder commands
 void countPulseRight();
 int pulseRight;
@@ -49,42 +48,50 @@ bool directionLeft;
 
 double getAngle();
 
+// Sound Sensor
+int sensorPin = A0;    
+int ledPin = 13;      
+int sensorValue = 0;
+bool robotOn = false;
+bool soundStart();
+
 void setup() {
   Serial.begin(9600);
-  pinMode(13, INPUT);
-  pinMode(servo_pin, OUTPUT);
-  pinMode(fire_sensor, INPUT);
+  
+  // Status Lights
+  pinMode(SOUND_LED, OUTPUT);
+  pinMode(FLAME_LED, OUTPUT);
 
+  // Right Encoder
   directionRight = true;//default -> Forward  
   pinMode(encoderBRight,INPUT);  
   attachInterrupt(5, countPulseRight, CHANGE);
 
+  // Left Encoder
   directionLeft = true;//default -> Forward  
   pinMode(encoderBLeft,INPUT);  
   attachInterrupt(4, countPulseLeft, CHANGE);
+  
+  // Sound Sensor
+  pinMode(ledPin, OUTPUT);
+  pinMode(sensorPin, INPUT);
 }
- 
-bool btn = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (digitalRead(13)) {
-    btn = !btn;
+  if (soundStart() || digitalRead(13)) {
+    robotOn = !robotOn;
   }
 
-  if(btn){
+  if(robotOn){
 //    Serial.println(pulseRight);
 //    definedStartSearch();
-    Serial.println("====================================");
-    Serial.print("F: ");
-    Serial.println(frontUltrasonic.getDistance());
-    Serial.print("L: ");
-    Serial.println(leftUltrasonic.getDistance());
-    Serial.print("R: ");
-    Serial.println(rightUltrasonic.getDistance());
-    Serial.print("B: ");
-    Serial.println(backUltrasonic.getDistance());
-    delay(300);
+     digitalWrite(SOUND_LED, HIGH);
+	  digitalWrite(FLAME_LED, HIGH);
+	  delay(1000);
+	 digitalWrite(SOUND_LED, LOW);
+	  digitalWrite(FLAME_LED, LOW);
+	  delay(1000);
   }
   else{
     hDrive(0.0, 0.0, 0.0);
@@ -125,43 +132,27 @@ void hDrive(double move, double rotate, double strafe) {
   strafeMotor.set(strafe);
 }
 
-void scanForFire(){
-  servo_pin.write(0);
-  for(int i = 0; i <= 180;i += 10){
-    if(digitalRead(fire_sensor)){
-      delay(10);//make sure that the reading isn't a false positive
-      while(digitalRead(fire_sensor))
-      {
-        //Turn on extinguisher
-        delay(50);
-      }
-    }
-    else if(val == HIGH && !directionRight)
-    {
-      directionRight = true;  //Forward
-    }
-  }
-}
-
-double getAngle() {
-  return ((pulseLeft - pulseRight) * 12.5 / 700) / 8;
-}
-
-double getPercentError(double actual, double target) {
-  return abs(actual - target) / target;
-}
-
-void turnToAngle(double targetAngle) {
-  while (abs(getAngle()) < abs(targetAngle)) {
-    hDrive(0.0, getPercentError(getAngle(), targetAngle()), 0.0);
-  }
-  hDrive(0.0, 0.0, 0.0);
+bool soundStart(){
+  return (analogRead(sensorPin) > 500);
 }
 
 void drivetrainCheck() {
   hDrive(0.3, 0.0, 0.0); delay(300); hDrive(-0.3, 0.0, 0.0); delay(300);
   hDrive(0.0, 0.3, 0.0); delay(300); hDrive(0.0, -0.3, 0.0); delay(300);
   hDrive(0.0, 0.0, 0.3); delay(300); hDrive(0.0, 0.0, -0.3); delay(300);
+}
+
+void ultrasonicCheck() {
+	Serial.println("====================================");
+	Serial.print("F: ");
+	Serial.println(frontUltrasonic.getDistance());
+	Serial.print("L: ");
+	Serial.println(leftUltrasonic.getDistance());
+	Serial.print("R: ");
+	Serial.println(rightUltrasonic.getDistance());
+	Serial.print("B: ");
+	Serial.println(backUltrasonic.getDistance());
+	delay(300);
 }
 
 void driveToWhite() {
@@ -222,6 +213,10 @@ void countPulseRight() {
     if(val == LOW && directionRight)
     {
       directionRight = false; //Reverse
+    } else if(val == HIGH && !directionRight) {
+      directionRight = true;
+    }
+  }
   encoderALastRight = Lstate;
  
   if(!directionRight)  pulseRight++;
@@ -236,6 +231,10 @@ void countPulseLeft() {
     if(val == LOW && directionLeft)
     {
       directionLeft = false; //Reverse
+    } else if(val == HIGH && !directionLeft) {
+      directionLeft = true;
+    }
+  }
   encoderALastLeft = Lstate;
  
   if(!directionLeft)  pulseLeft++;

@@ -27,7 +27,6 @@ void soundStart(){
        Serial.println( "RobotOn: TRUE") ;
       }
     }    
-
 }
 void loop() {
  soundStart();
