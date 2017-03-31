@@ -1,5 +1,5 @@
-#ifndef ColorSensor_h
-#define ColorSensor_h
+#ifndef Ultrasonic_h
+#define Ultrasonic_h
 
 #include "Arduino.h"
 
