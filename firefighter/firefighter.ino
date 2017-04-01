@@ -100,6 +100,8 @@ void setup() {
   FreqCount.begin(1000);
 }
 
+bool foundRoom = false;
+
 void loop() {
   // put your main code here, to run repeatedly:
   Serial.println(count);
@@ -117,9 +119,13 @@ void loop() {
   if(robotOn){
     FreqCount.end();
     resetEncoders();
+    // ultrasonicCheck();
+	// drivetrainCheck();
 //    extinguish();
-    naviguessMaze(0.5);
-
+    // naviguessMaze(0.3);
+	while (!foundRoom) {
+		driveToWhite();
+	}
   }
   else{
     digitalWrite(SOUND_LED, LOW);
@@ -197,6 +203,7 @@ void driveToWhite() {
   
 //      Serial.println("Done");
   hDrive(0.0, 0.0, 0.0);
+  foundRoom = true;
 }
 
 void driveThroughRoom() {
@@ -335,32 +342,44 @@ void naviguessMaze(double swagSpeed) {
 	bool frontTriggered = false;
 	bool leftTriggered = false;
 	bool rightTriggered = false;
+	bool backTriggered = false;
 	bool sweetSpot =  false;
 	
-	if (frontUltrasonic.getDistance() < 10) {
+	if (frontUltrasonic.getDistance() < 2) {
 		frontTriggered = true;
-	} else if ((leftUltrasonic.getDistance() > 4) && (rightUltrasonic.getDistance() > 4)) {
+	} else if ((leftUltrasonic.getDistance() > 3) && (rightUltrasonic.getDistance() > 4)) {
 		sweetSpot = true;
-	} else if (leftUltrasonic.getDistance() < 4) {
+	} else if (leftUltrasonic.getDistance() < 3) {
 		leftTriggered = true;
-		frontTriggered = frontUltrasonic.getDistance() < 10;
-	} else if (rightUltrasonic.getDistance() < 4) {
+		frontTriggered = frontUltrasonic.getDistance() < 2;
+	} else if (rightUltrasonic.getDistance() < 3) {
 		rightTriggered = true;
-		frontTriggered = frontUltrasonic.getDistance() < 10;
+		frontTriggered = frontUltrasonic.getDistance() < 2;
+	} else if (backUltrasonic.getDistance() < 2) {
+		backTriggered = true;
 	} else {
-		frontTriggered = leftTriggered = rightTriggered = sweetSpot = false;
+		frontTriggered = leftTriggered = rightTriggered = backTriggered = sweetSpot = false;
 	}
 	
 	if (sweetSpot) {
 		hDrive(swagSpeed, 0.0, 0.0);
 	} else if (leftTriggered && frontTriggered) {
+		hDrive(-swagSpeed, 0.0, 0.0);
+		delay(50);
 		hDrive(0.0, swagSpeed , 0.0);
 	} else if (rightTriggered && frontTriggered) {
 		hDrive(0.0, -swagSpeed , 0.0);
+		delay(10);
+		hDrive(-swagSpeed, 0.0, 0.0);
+		delay(50);
 	} else if (leftTriggered) {
 		hDrive(swagSpeed - 0.2, swagSpeed, 0.0);
 	} else if (rightTriggered) {
-		hDrive(0.8, -swagSpeed , 0.0);
+		hDrive(swagSpeed - 0.2, -swagSpeed , 0.0);
+	} else if (frontTriggered && !rightTriggered & !leftTriggered){
+		hDrive(-swagSpeed, 0.0, 0.0);
+	} else if (backTriggered) {
+		hDrive(-swagSpeed, -swagSpeed, 0.0);
 	} else {
 		hDrive(swagSpeed, swagSpeed , 0.0);
 	}
