@@ -460,8 +460,15 @@ void naviguessMaze(double swagSpeed) {
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
-		turnToAngle(90, -swagSpeed);
-		rightTurns++;
+		if (rightTurns == 4) {
+			turnToAngle(-90, swagSpeed);
+			rightTurns = 0;
+		} else {
+			turnToAngle(90, -swagSpeed);
+			rightTurns++;
+		}
+		// turnToAngle(90, -swagSpeed);
+		// rightTurns++;
 	} else if (backTriggered) {
 		hDrive(swagSpeed, swagSpeed, 0.0);
 	} else {
