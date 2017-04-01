@@ -36,6 +36,7 @@ Ultrasonic backUltrasonic(22, 23, true);
 void driveToWhite();
 void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
+void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed);
 void definedStartSearch();
 double getAngle(double targetAngle);
 double getPercentError(double actual, double target);
@@ -111,6 +112,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   if (FreqCount.available()) {
     count = FreqCount.read();
+	Serial.println(count);
   } else {
     count = 0;
   }
@@ -129,10 +131,8 @@ void loop() {
 		ri = colour_sensor.getColor('r');
 	}
 	
-	// turnToAngle(90, -0.3);
-	// delay(2000);
-	// turnToAngle(90, 0.3);
-	// delay(2000);
+	// definedStartSearch();
+	
  
 	// while((colour_sensor.getColor('r') > ri - 70)) {
 		// naviguessMaze(0.3);
@@ -143,6 +143,7 @@ void loop() {
 	}
 	
 	foundFlame = true;
+	digitalWrite(FLAME_LED, foundFlame);
 	
 	fan_motor.set(1.0);
 	
@@ -152,11 +153,12 @@ void loop() {
 	while (frontUltrasonic.getDistance() > 0.5) {
 		hDrive(0.3, 0.0, 0.0);
 		extingusher_servo.write(110);
-		delay(100);
+		delay(600);
 		extingusher_servo.write(70);
-		delay(200);
+		delay(600);
 		hDrive(0.0, 0.0, 0.0);
 		delay(200);
+		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
 	}
 
 	hDrive(0.0, 0.0, 0.0);
@@ -396,41 +398,61 @@ void extinguish() {
   }
 }
 
+bool direction = true;
+int leftTurns = 0;
+int rightTurns = 0;
+
 void naviguessMaze(double swagSpeed) {
-	bool frontTriggered = false;
-	bool leftTriggered = false;
-	bool rightTriggered = false;
-	bool backTriggered = false;
-	bool sweetSpot =  false;
+	bool frontTriggered = frontUltrasonic.getDistance() < 2;
+	bool leftTriggered = leftUltrasonic.getDistance() < 3;
+	bool rightTriggered = rightUltrasonic.getDistance() < 3;
+	bool backTriggered = backUltrasonic.getDistance() < 2;
 	
-	if (frontUltrasonic.getDistance() < 2) {
-		frontTriggered = true;
-	} else if ((leftUltrasonic.getDistance() > 3) && (rightUltrasonic.getDistance() > 4)) {
-		sweetSpot = true;
-	} else if (leftUltrasonic.getDistance() < 3) {
-		leftTriggered = true;
-		frontTriggered = frontUltrasonic.getDistance() < 2;
-	} else if (rightUltrasonic.getDistance() < 3) {
-		rightTriggered = true;
-		frontTriggered = frontUltrasonic.getDistance() < 2;
-	} else if (backUltrasonic.getDistance() < 2) {
-		backTriggered = true;
-	} else {
-		frontTriggered = leftTriggered = rightTriggered = backTriggered = sweetSpot = false;
-	}
+	// bool sweetSpot =  false;
 	
-	if (sweetSpot) {
-		hDrive(swagSpeed, 0.0, 0.0);
-	} else if (leftTriggered && frontTriggered) {
+	// if (frontUltrasonic.getDistance() < 2) {
+		 // frontTriggered = true;
+	// } 
+	// // else if (leftUltrasonic.getDistance() > 3) && (rightUltrasonic.getDistance() > 4)) {
+		// // sweetSpot = true;
+	// } else if (leftUltrasonic.getDistance() < 3) {
+		// leftTriggered = true;
+		// frontTriggered = frontUltrasonic.getDistance() < 2;
+	// } else if (rightUltrasonic.getDistance() < 3) {
+		// rightTriggered = true;
+		// frontTriggered = frontUltrasonic.getDistance() < 2;
+	// } else if (backUltrasonic.getDistance() < 2) {
+		// backTriggered = true;
+	// } else {
+		// frontTriggered = leftTriggered = rightTriggered = backTriggered = sweetSpot = false;
+	// }
+	
+	// if (sweetSpot) {
+		// hDrive(swagSpeed, 0.0, 0.0);
+	  if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
-		delay(50);
+		delay(100);
 		// hDrive(0.0, swagSpeed , 0.0);
-		turnToAngle(90, -swagSpeed);
+		
+		if (rightTurns == 4) {
+			turnToAngle(-90, swagSpeed);
+			rightTurns = 0;
+		} else {
+			turnToAngle(90, -swagSpeed);
+			rightTurns++;
+		}
 	} else if (rightTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
-		delay(50);
+		delay(100);
 		// hDrive(0.0, -swagSpeed , 0.0);
-		turnToAngle(-90, swagSpeed);
+		
+		if (leftTurns == 4) {
+			turnToAngle(-90, -swagSpeed);
+			leftTurns = 0;
+		} else {
+			turnToAngle(-90, swagSpeed);
+			leftTurns++;
+		}
 	} else if (leftTriggered && !frontTriggered) {
 		hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
 	} else if (rightTriggered && !frontTriggered) {
@@ -438,12 +460,39 @@ void naviguessMaze(double swagSpeed) {
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
-		turnToAngle(45, swagSpeed);
+		turnToAngle(90, -swagSpeed);
+		rightTurns++;
 	} else if (backTriggered) {
-		hDrive(-swagSpeed, swagSpeed, 0.0);
+		hDrive(swagSpeed, swagSpeed, 0.0);
 	} else {
-		hDrive(swagSpeed, -swagSpeed , 0.0);
+		hDrive(swagSpeed, 0.0, 0.0);
 	}
 	
+	if (direction) {
+		strafeMotor.set(0.3);
+	} else {
+		strafeMotor.set(-0.3);
+	}
+	
+	direction = !direction;
+	
 	delay(50);
+}
+
+void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed) {
+	leftMotor1.set(constrain(leftSpeed, -1.0, 1.0));
+	leftMotor2.set(constrain(leftSpeed, -1.0, 1.0));
+	rightMotor1.set(-constrain(rightSpeed, -1.0, 1.0));
+	rightMotor2.set(-constrain(rightSpeed, -1.0, 1.0));
+	strafeMotor.set(strafeSpeed);
+}
+
+void followWall(double targetDistance) {
+	if (rightUltrasonic.getDistance() < targetDistance) {
+		tankDrive(0.3, 0.6, 0.0);
+	} else if (rightUltrasonic.getDistance() > targetDistance) {
+		tankDrive(0.6, 0.3, 0.0);
+	} else {
+		tankDrive(0.6, 0.6, 0.0);
+	}
 }
