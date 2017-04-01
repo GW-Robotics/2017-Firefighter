@@ -4,7 +4,7 @@
 #include <Servo.h>
 
 #define FLAME_LED 53
-#define SOUND_LED 52
+#define SOUND_LED 42
 
 #define WALL_DISTANCE 7
 
@@ -12,14 +12,14 @@
 #define servo_pin 31
 #define interval 10
 
-Motor fan_motor(50,51);
 Servo extingusher_servo;
 
-Motor leftMotor1(3, 4);
-Motor leftMotor2(5, 6);
-Motor rightMotor1(7, 8);
-Motor rightMotor2(9, 10);
-Motor strafeMotor(11, 12);
+Motor leftMotor1(2, 3);
+Motor leftMotor2(4, 5);
+Motor rightMotor1(6, 7);
+Motor rightMotor2(8, 9);
+Motor strafeMotor(10, 11);
+Motor fan_motor(12, 13);
 
 ColorSensor colour_sensor(44, 46, 48, 50, 52);
 
@@ -33,10 +33,10 @@ void driveToWhite();
 void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
 void definedStartSearch();
-void turnToAngle();
 double getAngle(double targetAngle);
 double getPercentError(double actual, double target);
-void turnToAngle(double targetAngle);
+void turnToAngle(double targetAngle, double speed);
+void naviguessMaze(double swagSpeed);
 
 // Encoder commands
 void countPulseRight();
@@ -54,18 +54,25 @@ byte encoderALastLeft;
 bool directionLeft;
 
 double getAngle();
+double getDistanceLeft();
+double getDistanceRight();
+void resetEncoders();
 
 // Sound Sensor
-int sensorPin = A0;   
-int sensorValue = 0;
+int sensorPin = A0;
 bool robotOn = false;
 bool soundStart();
 
 // Extinguisher
 void extinguish();
 
+int startSwitch = 14;
+
 void setup() {
   Serial.begin(9600);
+  
+  // Start Switch
+  pinMode(startSwitch, INPUT);
   
   // Status Lights
   pinMode(SOUND_LED, OUTPUT);
@@ -88,27 +95,22 @@ void setup() {
   pinMode(flame_sensor, INPUT);
 
   extingusher_servo.attach(servo_pin);
-  extingusher_servo.write(0);
+  extingusher_servo.write(90);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (soundStart() || digitalRead(13)) {
+  if (soundStart() || digitalRead(startSwitch)) {
     digitalWrite(SOUND_LED, HIGH);
     robotOn = !robotOn;
   }
 
-  delay(300);
-
   if(robotOn){
-//    Serial.println(pulseRight);
-//    definedStartSearch();
-//	  digitalWrite(FLAME_LED, HIGH);
-//	  delay(1000);
-//	  
-//	  digitalWrite(FLAME_LED, LOW);
-//	  delay(1000);
-    extinguish();
+//    extinguish();
+	// naviguessMaze(0.5);
+	resetEncoders();
+	turnToAngle(90, 0.3);
+	Serial.println(getAngle());
   }
   else{
     hDrive(0.0, 0.0, 0.0);
@@ -236,8 +238,8 @@ void countPulseRight() {
   }
   encoderALastRight = Lstate;
  
-  if(!directionRight)  pulseRight++;
-  else  pulseRight--;
+  if(!directionRight)  pulseRight--;
+  else  pulseRight++;
 }
 
 void countPulseLeft() {
@@ -259,22 +261,34 @@ void countPulseLeft() {
 }
 
 double getAngle() {
-  return ((pulseLeft - pulseRight) * 12.5 / 700) / 8;
+  return (180 / PI) * (getDistanceLeft() - getDistanceRight()) / 8;
+}
+
+double getDistanceLeft() {
+	return (pulseLeft * 12.5) / 1356;
+}
+
+double getDistanceRight() {
+	return (pulseRight * 12.5) / 1356;
+}
+
+void resetEncoders() {
+	pulseLeft = pulseRight = 0;
 }
 
 double getPercentError(double actual, double target) {
   return abs(actual - target) / target;
 }
 
-void turnToAngle(double targetAngle) {
+void turnToAngle(double targetAngle, double speed) {
   while (abs(getAngle()) < abs(targetAngle)) {
-    hDrive(0.0, getPercentError(getAngle(), targetAngle), 0.0);
+    hDrive(0.0, speed, 0.0);
   }
   hDrive(0.0, 0.0, 0.0);
 }
 
 void extinguish() {
-  for(int i = 0; i <= 180; i += interval){
+  for(int i = 40; i <= 160; i += interval){
     extingusher_servo.write(i);
     delay(15*interval);//give time for servo to move
 
@@ -292,7 +306,7 @@ void extinguish() {
     digitalWrite(FLAME_LED, LOW);  
   }
   
-  for(int i = 180; i >=0; i -= interval){
+  for(int i = 140; i >=20; i -= interval){
     extingusher_servo.write(i);
     delay(15*interval);//give time for servo to move
 
@@ -311,3 +325,38 @@ void extinguish() {
   }
 }
 
+void naviguessMaze(double swagSpeed) {
+	bool frontTriggered = false;
+	bool leftTriggered = false;
+	bool rightTriggered = false;
+	bool sweetSpot =  false;
+	
+	if (frontUltrasonic.getDistance() < 10) {
+		frontTriggered = true;
+	} else if ((leftUltrasonic.getDistance() > 4) && (rightUltrasonic.getDistance() > 4)) {
+		sweetSpot = true;
+	} else if (leftUltrasonic.getDistance() < 4) {
+		leftTriggered = true;
+		frontTriggered = frontUltrasonic.getDistance() < 10;
+	} else if (rightUltrasonic.getDistance() < 4) {
+		rightTriggered = true;
+		frontTriggered = frontUltrasonic.getDistance() < 10;
+	} else {
+		frontTriggered = leftTriggered = rightTriggered = sweetSpot = false;
+	}
+	
+	if (sweetSpot) {
+		hDrive(swagSpeed, 0.0, 0.0);
+	} else if (leftTriggered && frontTriggered) {
+		hDrive(0.0, swagSpeed , 0.0);
+	} else if (rightTriggered && frontTriggered) {
+		hDrive(0.0, -swagSpeed , 0.0);
+	} else if (leftTriggered) {
+		hDrive(swagSpeed - 0.2, swagSpeed, 0.0);
+	} else if (rightTriggered) {
+		hDrive(0.8, -swagSpeed , 0.0);
+	} else {
+		hDrive(swagSpeed, swagSpeed , 0.0);
+	}
+	
+}

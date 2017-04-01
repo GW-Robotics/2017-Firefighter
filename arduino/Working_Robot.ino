@@ -79,7 +79,7 @@ void loop()
 {
     read_sensors();
     analyze();
-    //run_motor();
+    run_motor();
     //time_function();
 }
 
