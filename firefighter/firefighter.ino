@@ -1,6 +1,7 @@
 #include "Ultrasonic.h"
 #include "ColorSensor.h"
 #include "Motor.h"
+#include "FreqCount.h"
 #include <Servo.h>
 
 #define FLAME_LED 53
@@ -11,6 +12,9 @@
 #define flame_sensor 30
 #define servo_pin 31
 #define interval 10
+
+#define LOW_START 3230
+#define HIGH_START 4370
 
 Servo extingusher_servo;
 
@@ -59,9 +63,8 @@ double getDistanceRight();
 void resetEncoders();
 
 // Sound Sensor
-int sensorPin = A0;
 bool robotOn = false;
-bool soundStart();
+unsigned long count;
 
 // Extinguisher
 void extinguish();
@@ -87,32 +90,39 @@ void setup() {
   directionLeft = true;//default -> Forward  
   pinMode(encoderBLeft,INPUT);  
   attachInterrupt(4, countPulseLeft, CHANGE);
-  
-  // Sound Sensor
-  pinMode(sensorPin, INPUT);
 
   // Extinguisher
   pinMode(flame_sensor, INPUT);
 
   extingusher_servo.attach(servo_pin);
   extingusher_servo.write(90);
+
+  FreqCount.begin(1000);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (soundStart() || digitalRead(startSwitch)) {
+  Serial.println(count);
+  if (FreqCount.available()) {
+    count = FreqCount.read();
+  } else {
+    count = 0;
+  }
+  
+  if ((count > 3230 && count < 4370) || digitalRead(startSwitch)) {
     digitalWrite(SOUND_LED, HIGH);
     robotOn = !robotOn;
   }
 
   if(robotOn){
+    FreqCount.end();
+    resetEncoders();
 //    extinguish();
-	// naviguessMaze(0.5);
-	resetEncoders();
-	turnToAngle(90, 0.3);
-	Serial.println(getAngle());
+    naviguessMaze(0.5);
+
   }
   else{
+    digitalWrite(SOUND_LED, LOW);
     hDrive(0.0, 0.0, 0.0);
   }
 
@@ -149,10 +159,6 @@ void hDrive(double move, double rotate, double strafe) {
   rightMotor1.set(-constrain(rightSpeed, -1.0, 1.0));
   rightMotor2.set(-constrain(rightSpeed, -1.0, 1.0));
   strafeMotor.set(strafe);
-}
-
-bool soundStart(){
-  return (analogRead(sensorPin) > 500);
 }
 
 void drivetrainCheck() {
