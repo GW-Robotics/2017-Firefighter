@@ -105,6 +105,7 @@ void setup() {
 }
 
 bool foundRoom = false;
+bool foundFlame = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -132,12 +133,43 @@ void loop() {
 	// delay(2000);
 	// turnToAngle(90, 0.3);
 	// delay(2000);
-  
-	while((colour_sensor.getColor('r') > ri - 70)) {
+ 
+	// while((colour_sensor.getColor('r') > ri - 70)) {
+		// naviguessMaze(0.3);
+	// }
+	
+	while(!foundFlame && digitalRead(flame_sensor)) {
 		naviguessMaze(0.3);
 	}
 	
+	foundFlame = true;
+	
+	fan_motor.set(1.0);
+	
 	hDrive(0.0, 0.0, 0.0);
+	delay(100);
+	
+	while (frontUltrasonic.getDistance() > 0.5) {
+		hDrive(0.3, 0.0, 0.0);
+		extingusher_servo.write(110);
+		delay(100);
+		extingusher_servo.write(70);
+		delay(200);
+		hDrive(0.0, 0.0, 0.0);
+		delay(200);
+	}
+
+	hDrive(0.0, 0.0, 0.0);
+	
+	// while (true) {
+		// for(int i = 40; i <= 160; i += interval){
+		  // extingusher_servo.write(i); 
+		// }
+	  
+		// for(int i = 140; i >=20; i -= interval){
+		  // extingusher_servo.write(i); 
+		// }
+	// }
 
 	// while (!foundRoom) {
 		// driveToWhite();
