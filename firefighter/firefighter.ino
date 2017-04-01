@@ -71,6 +71,8 @@ void extinguish();
 
 int startSwitch = 14;
 
+int ri;
+
 void setup() {
   Serial.begin(9600);
   
@@ -93,6 +95,8 @@ void setup() {
 
   // Extinguisher
   pinMode(flame_sensor, INPUT);
+  
+  ri = -1;
 
   extingusher_servo.attach(servo_pin);
   extingusher_servo.write(90);
@@ -120,16 +124,19 @@ void loop() {
 	// Serial.println(colour_sensor.getColor('r'));
     // ultrasonicCheck();
 	// drivetrainCheck();
-	
-	// int ri = colour_sensor.getColor('r');
-  
-	// while(colour_sensor.getColor('r') > ri - 30) {
-		// // naviguessMaze(0.3);
-	// }
-
-	while (!foundRoom) {
-		driveToWhite();
+	if (ri == -1) {
+		ri = colour_sensor.getColor('r');
 	}
+  
+	while((colour_sensor.getColor('r') > ri - 70)) {
+		naviguessMaze(0.3);
+	}
+	
+	hDrive(0.0, 0.0, 0.0);
+
+	// while (!foundRoom) {
+		// driveToWhite();
+	// }
   }
   else{
     digitalWrite(SOUND_LED, LOW);
@@ -201,7 +208,7 @@ void driveToWhite() {
   Serial.print("Initial: ");
   Serial.println(ri);
   
-  while(r > ri - 40) { 
+  while(r > ri - 70) { 
     r = colour_sensor.getColor('r');
 //        String colour = String(r);
 //        Serial.println(colour);
