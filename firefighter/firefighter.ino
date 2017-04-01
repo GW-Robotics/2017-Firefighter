@@ -127,6 +127,11 @@ void loop() {
 	if (ri == -1) {
 		ri = colour_sensor.getColor('r');
 	}
+	
+	// turnToAngle(90, -0.3);
+	// delay(2000);
+	// turnToAngle(90, 0.3);
+	// delay(2000);
   
 	while((colour_sensor.getColor('r') > ri - 70)) {
 		naviguessMaze(0.3);
@@ -290,7 +295,7 @@ void countPulseLeft() {
 }
 
 double getAngle() {
-  return (180 / PI) * (getDistanceLeft() - getDistanceRight()) / 8;
+  return (180 / PI) * (getDistanceLeft() - getDistanceRight()) / 11.5;
 }
 
 double getDistanceLeft() {
@@ -310,10 +315,14 @@ double getPercentError(double actual, double target) {
 }
 
 void turnToAngle(double targetAngle, double speed) {
-	resetEncoders();
+  resetEncoders();
+  
+  hDrive(0.0, speed, 0.0);
+  
   while (abs(getAngle()) < abs(targetAngle)) {
-    hDrive(0.0, speed, 0.0);
+    Serial.println(getAngle());
   }
+  
   hDrive(0.0, 0.0, 0.0);
 }
 
@@ -384,24 +393,24 @@ void naviguessMaze(double swagSpeed) {
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
 		// hDrive(0.0, swagSpeed , 0.0);
-		turnToAngle(90, swagSpeed);
+		turnToAngle(90, -swagSpeed);
 	} else if (rightTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
 		// hDrive(0.0, -swagSpeed , 0.0);
-		turnToAngle(-90, -swagSpeed);
+		turnToAngle(-90, swagSpeed);
 	} else if (leftTriggered && !frontTriggered) {
-		hDrive(swagSpeed - 0.2, swagSpeed, 0.0);
+		hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
 	} else if (rightTriggered && !frontTriggered) {
-		hDrive(swagSpeed - 0.2, -swagSpeed , 0.0);
+		hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
 		turnToAngle(45, swagSpeed);
 	} else if (backTriggered) {
-		hDrive(-swagSpeed, -swagSpeed, 0.0);
+		hDrive(-swagSpeed, swagSpeed, 0.0);
 	} else {
-		hDrive(swagSpeed, swagSpeed , 0.0);
+		hDrive(swagSpeed, -swagSpeed , 0.0);
 	}
 	
 	delay(50);
