@@ -104,7 +104,6 @@ bool foundRoom = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println(count);
   if (FreqCount.available()) {
     count = FreqCount.read();
   } else {
@@ -118,11 +117,16 @@ void loop() {
 
   if(robotOn){
     FreqCount.end();
-    resetEncoders();
+	// Serial.println(colour_sensor.getColor('r'));
     // ultrasonicCheck();
 	// drivetrainCheck();
-//    extinguish();
-    // naviguessMaze(0.3);
+	
+	// int ri = colour_sensor.getColor('r');
+  
+	// while(colour_sensor.getColor('r') > ri - 30) {
+		// // naviguessMaze(0.3);
+	// }
+
 	while (!foundRoom) {
 		driveToWhite();
 	}
@@ -194,12 +198,17 @@ void driveToWhite() {
 //  String colour = String(ri) + " " + String(g) + " " + String(b);
 //  Serial.println(colour);
   hDrive(.3,0,0);
+  Serial.print("Initial: ");
+  Serial.println(ri);
   
-  while(r > ri - 30) { 
+  while(r > ri - 40) { 
     r = colour_sensor.getColor('r');
 //        String colour = String(r);
 //        Serial.println(colour);
   }
+  
+  Serial.print("Final: ");
+  Serial.println(r);
   
 //      Serial.println("Done");
   hDrive(0.0, 0.0, 0.0);
@@ -294,6 +303,7 @@ double getPercentError(double actual, double target) {
 }
 
 void turnToAngle(double targetAngle, double speed) {
+	resetEncoders();
   while (abs(getAngle()) < abs(targetAngle)) {
     hDrive(0.0, speed, 0.0);
   }
@@ -366,12 +376,13 @@ void naviguessMaze(double swagSpeed) {
 	} else if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
-		hDrive(0.0, swagSpeed , 0.0);
+		// hDrive(0.0, swagSpeed , 0.0);
+		turnToAngle(90, swagSpeed);
 	} else if (rightTriggered && frontTriggered) {
-		hDrive(0.0, -swagSpeed , 0.0);
-		delay(10);
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
+		// hDrive(0.0, -swagSpeed , 0.0);
+		turnToAngle(-90, -swagSpeed);
 	} else if (leftTriggered) {
 		hDrive(swagSpeed - 0.2, swagSpeed, 0.0);
 	} else if (rightTriggered) {
@@ -384,4 +395,5 @@ void naviguessMaze(double swagSpeed) {
 		hDrive(swagSpeed, swagSpeed , 0.0);
 	}
 	
+	delay(50);
 }
