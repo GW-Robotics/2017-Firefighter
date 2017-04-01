@@ -139,7 +139,8 @@ void loop() {
 	// }
 	
 	while(!foundFlame && digitalRead(flame_sensor)) {
-		naviguessMaze(0.3);
+		// naviguessMaze(0.3);
+		followWall(3);
 	}
 	
 	foundFlame = true;
@@ -454,9 +455,11 @@ void naviguessMaze(double swagSpeed) {
 			leftTurns++;
 		}
 	} else if (leftTriggered && !frontTriggered) {
-		hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
+		// hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
+		turnToAngle(2, -swagSpeed);
 	} else if (rightTriggered && !frontTriggered) {
-		hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
+		//hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
+		turnToAngle(-2, swagSpeed);
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
@@ -496,9 +499,9 @@ void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed) {
 
 void followWall(double targetDistance) {
 	if (rightUltrasonic.getDistance() < targetDistance) {
-		tankDrive(0.3, 0.6, 0.0);
-	} else if (rightUltrasonic.getDistance() > targetDistance) {
 		tankDrive(0.6, 0.3, 0.0);
+	} else if (rightUltrasonic.getDistance() > targetDistance) {
+		tankDrive(0.3, 0.6, 0.0);
 	} else {
 		tankDrive(0.6, 0.6, 0.0);
 	}
