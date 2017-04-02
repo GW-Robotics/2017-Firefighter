@@ -18,7 +18,7 @@
 #define WALL_DISTANCE 7
 
 #define flame_sensor 30
-#define servo_pin 31
+#define servo_pin 31t
 #define interval 10
 
 #define LOW_START 3230
@@ -482,9 +482,10 @@ int rightTurns = 0;
 
 void naviguessMaze(double swagSpeed) {
 	bool frontTriggered = frontUltrasonic.getDistance() < 2;
-	bool leftTriggered = leftUltrasonic.getDistance() < 3;
-	bool rightTriggered = rightUltrasonic.getDistance() < 3;
+	bool leftTriggered = leftUltrasonic.getDistance() < 2;
+	bool rightTriggered = rightUltrasonic.getDistance() < 2;
 	bool backTriggered = backUltrasonic.getDistance() < 2;
+  bool rightFavor = rightUltrasonic.getDistance() <7 && rightUltrasonic.getDistance() > 2 && frontUltrasonic.getDistance() < 20;
 	
 	if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
@@ -530,6 +531,8 @@ void naviguessMaze(double swagSpeed) {
 		// rightTurns++;
 	} else if (backTriggered) {
 		hDrive(swagSpeed, swagSpeed, 0.0);
+	} else if(rightFavor) {
+    turnToAngle(-2, swagSpeed);
 	} else {
 		hDrive(swagSpeed, 0.0, 0.0);
 	}
