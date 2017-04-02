@@ -16,25 +16,31 @@ void setup() {
   Serial.begin(9600);
   pinMode(LED_Pin, OUTPUT);
   pinMode(flame_sensor, INPUT);
+  attachInterrupt(digitalPinToInterrupt(flame_sensor), put_out_fire, LOW);
 
   extingusher_servo.attach(servo_pin);
   extingusher_servo.write(0);
 }
 void put_out_fire(){
-  Serial.println("There is a fire");
-  digitalWrite(LED_Pin, HIGH);
-  
-  //turn on fan
-  fan_motor.set(1);
-  Serial.println("fan is on");
-  while(!digitalRead(flame_sensor)){
-    //while there is a fire
-    delay(1000);   
+  if(!digitalRead(flame_sensor)){
+    Serial.println(String(random(100000)));
+    delay(3000);
   }
-  Serial.println("Fan is off");
-  //turn off fan
-  fan_motor.set(0);
-  digitalWrite(LED_Pin, LOW);
+  return;
+//  Serial.println("There is a fire");
+//  digitalWrite(LED_Pin, HIGH);
+//  
+//  //turn on fan
+//  fan_motor.set(1);
+//  Serial.println("fan is on");
+//  while(!digitalRead(flame_sensor)){
+//    //while there is a fire
+//    delay(1000);   
+//  }
+//  Serial.println("Fan is off");
+//  //turn off fan
+//  fan_motor.set(0);
+//  digitalWrite(LED_Pin, LOW);
 }
 void loop() {
   // put your main code here, to run repeatedly:
@@ -43,15 +49,13 @@ void loop() {
     extingusher_servo.write(i);
     delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      put_out_fire();    
+
   }
   for(i; i >=0; i -= interval){
     extingusher_servo.write(i);
     delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      put_out_fire();  
+
   
   fan_motor.set(1);
   }
