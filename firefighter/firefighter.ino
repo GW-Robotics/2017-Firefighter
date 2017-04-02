@@ -314,24 +314,12 @@ void ultrasonicCheck() {
 void driveToWhite() {
   int ri = colour_sensor.getColor('r');
   int r = ri;
-//  int g = colour_sensor.getColor('g');
-//  int b = colour_sensor.getColor('b');
-//  String colour = String(ri) + " " + String(g) + " " + String(b);
-//  Serial.println(colour);
   hDrive(.3,0,0);
-  Serial.print("Initial: ");
-  Serial.println(ri);
   
   while(r > ri - 70) { 
     r = colour_sensor.getColor('r');
-//        String colour = String(r);
-//        Serial.println(colour);
   }
   
-  Serial.print("Final: ");
-  Serial.println(r);
-  
-//      Serial.println("Done");
   hDrive(0.0, 0.0, 0.0);
 }
 
@@ -423,12 +411,24 @@ double getPercentError(double actual, double target) {
 }
 
 void turnToAngle(double targetAngle, double speed) {
-  resetEncoders();
+  resetGyro('z');
   
   hDrive(0.0, speed, 0.0);
   
   while (abs(getAngle('z')) < abs(targetAngle)) {
-    Serial.println(getAngle('z'));
+    // Serial.println(getAngle('z'));
+  }
+  
+  hDrive(0.0, 0.0, 0.0);
+}
+
+void driveToDistance(double targetDistance, double speed) {
+  resetEncoders();
+  
+  hDrive(speed, 0.0, 0.0);
+  
+  while (abs(getDistanceLeft()) < abs(targetDistance) && abs(getDistanceRight()) < abs(targetDistance) ) {
+    // Serial.println(getDistanceLeft());
   }
   
   hDrive(0.0, 0.0, 0.0);
