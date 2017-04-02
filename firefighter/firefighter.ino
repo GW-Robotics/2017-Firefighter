@@ -427,8 +427,8 @@ void turnToAngle(double targetAngle, double speed) {
   
   hDrive(0.0, speed, 0.0);
   
-  while (abs(getAngle()) < abs(targetAngle)) {
-    Serial.println(getAngle());
+  while (abs(getAngle('z')) < abs(targetAngle)) {
+    Serial.println(getAngle('z'));
   }
   
   hDrive(0.0, 0.0, 0.0);
