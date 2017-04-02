@@ -19,8 +19,8 @@
 #define WALL_DISTANCE 7
 
 #define flame_sensor 30
-#define servo_pin 31
-#define interval 10
+// #define servo_pin 31
+// #define interval 10
 
 #define LOW_START 3230
 #define HIGH_START 4370
@@ -56,6 +56,8 @@ Ultrasonic leftArrayOutter(32, 33, true);//orange
 
 Ultrasonic rightArrayInner(36, 37, true);//orange
 Ultrasonic rightArrayOutter(38, 39, true);//black
+
+void ultrasonicArrayCheck();
 
 MPU6050 mpu; // Default address 0x68
 
@@ -159,8 +161,8 @@ void setup() {
   
   ri = -1;
 
-  extingusher_servo.attach(servo_pin);
-  extingusher_servo.write(90);
+  // extingusher_servo.attach(31);
+  // extingusher_servo.write(90);
 
   mpu.initialize();
   pinMode(INTERRUPT_PIN, INPUT);
@@ -199,7 +201,7 @@ void setup() {
 }
 
 bool firstStart = false;
-bool foundFlame = false;
+// bool foundFlame = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -209,6 +211,7 @@ void loop() {
   } else {
     count = 0;
   }
+  
 //  Serial.println(getAngle('z'));
   if ((count > 3230 && count < 4370) || digitalRead(startSwitch)) {
     digitalWrite(SOUND_LED, HIGH);
@@ -225,8 +228,7 @@ void loop() {
     }
 	
   	while(!foundFlame && digitalRead(flame_sensor)) {
-  		// naviguessMaze(0.3);
-  		// followWall(1.0);
+		// naviguessMaze(0.3);
        ultrasonicCheck();
       // drivetrainCheck();
       
@@ -239,26 +241,28 @@ void loop() {
 
   	}
 	
-  	foundFlame = true;
-  	digitalWrite(FLAME_LED, foundFlame);
-  	
-  	fan_motor.set(1.0);
-  	
+  	// foundFlame = true;
+  	// digitalWrite(FLAME_LED, foundFlame);
+	digitalWrite(FLAME_LED, true);
   	hDrive(0.0, 0.0, 0.0);
-  	delay(100);
 	
-  	while (frontUltrasonic.getDistance() > 0.5) {
-  		hDrive(0.3, 0.0, 0.0);
-  		extingusher_servo.write(110);
-  		delay(600);
-  		extingusher_servo.write(70);
-  		delay(600);
-  		hDrive(0.0, 0.0, 0.0);
-  		delay(200);
-  		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
-  	}
+	while (true) {
+		pulseFan();
+		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
+	}
+	
+  	// while (frontUltrasonic.getDistance() > 0.5) {
+  		// hDrive(0.3, 0.0, 0.0);
+  		// // extingusher_servo.write(110);
+  		// delay(600);
+  		// // extingusher_servo.write(70);
+  		// // delay(600);
+  		// // hDrive(0.0, 0.0, 0.0);
+  		// // delay(200);
+  		// digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
+  	// }
 
-	  hDrive(0.0, 0.0, 0.0);
+	  // hDrive(0.0, 0.0, 0.0);
   }
   else{
     digitalWrite(SOUND_LED, LOW);
@@ -267,6 +271,13 @@ void loop() {
   }
 
 //  delay(100);
+}
+
+void pulseFan() {
+	fan_motor.set(1.0);
+	delay(3000);
+	fan_motor.set(0.0);
+	delay(1500);
 }
 
 void hDrive(double move, double rotate, double strafe) {
@@ -320,14 +331,25 @@ void ultrasonicCheck() {
 	delay(300);
 }
 
+void ultrasonicArrayCheck() {
+	Serial.println("====================================");
+	Serial.print("LI: ");
+	Serial.println(leftArrayInner.getDistance());
+	Serial.print("LO: ");
+	Serial.println(leftArrayOutter.getDistance());
+	Serial.print("RI: ");
+	Serial.println(rightArrayInner.getDistance());
+	Serial.print("RO: ");
+	Serial.println(rightArrayOutter.getDistance());
+	delay(300);
+}
+
+
 void driveToWhite() {
   int ri = colour_sensor.getColor('r');
-  int r = ri;
   hDrive(.3,0,0);
   
-  while(r > ri - 70) { 
-    r = colour_sensor.getColor('r');
-  }
+  while(colour_sensor.getColor('r') > ri - 70) { }
   
   hDrive(0.0, 0.0, 0.0);
 }
@@ -447,43 +469,43 @@ double getPidOutput() {
   return (setpoint - getAngle('x')) * kP;
 }
 
-void extinguish() {
-  for(int i = 40; i <= 160; i += interval){
-    extingusher_servo.write(i);
-    delay(15*interval);//give time for servo to move
+// void extinguish() {
+  // for(int i = 40; i <= 160; i += interval){
+    // extingusher_servo.write(i);
+    // delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      digitalWrite(FLAME_LED, HIGH);
+    // if(!digitalRead(flame_sensor))
+      // digitalWrite(FLAME_LED, HIGH);
   
-    //turn on fan
-    fan_motor.set(1);
-    while(!digitalRead(flame_sensor)){
-      //while there is a fire
-      delay(1000);   
-    }
-    //turn off fan
-    fan_motor.set(0);
-    digitalWrite(FLAME_LED, LOW);  
-  }
+    // //turn on fan
+    // fan_motor.set(1);
+    // while(!digitalRead(flame_sensor)){
+      // //while there is a fire
+      // delay(1000);   
+    // }
+    // //turn off fan
+    // fan_motor.set(0);
+    // digitalWrite(FLAME_LED, LOW);  
+  // }
   
-  for(int i = 140; i >=20; i -= interval){
-    extingusher_servo.write(i);
-    delay(15*interval);//give time for servo to move
+  // for(int i = 140; i >=20; i -= interval){
+    // extingusher_servo.write(i);
+    // delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      digitalWrite(FLAME_LED, HIGH);
+    // if(!digitalRead(flame_sensor))
+      // digitalWrite(FLAME_LED, HIGH);
   
-    //turn on fan
-    fan_motor.set(1);
-    while(!digitalRead(flame_sensor)){
-      //while there is a fire
-      delay(1000);   
-    }
-    //turn off fan
-    fan_motor.set(0);
-    digitalWrite(FLAME_LED, LOW);  
-  }
-}
+    // //turn on fan
+    // fan_motor.set(1);
+    // while(!digitalRead(flame_sensor)){
+      // //while there is a fire
+      // delay(1000);   
+    // }
+    // //turn off fan
+    // fan_motor.set(0);
+    // digitalWrite(FLAME_LED, LOW);  
+  // }
+// }
 
 bool direction = true;
 int leftTurns = 0;
@@ -660,3 +682,4 @@ void resetGyro(char axis) {
       gyroResetValZ += getAngle('z');
       break;
   }
+}
