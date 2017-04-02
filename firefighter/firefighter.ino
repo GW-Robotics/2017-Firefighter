@@ -197,11 +197,17 @@ void setup() {
 
   resetGyro('z');
 
+  hDrive(0.0, 0.0, 0.0);
+  fan_motor.set(0.0);
+  
   FreqCount.begin(1000);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  
 }
 
 bool firstStart = false;
-// bool foundFlame = false;
+bool foundFlame = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -220,7 +226,7 @@ void loop() {
     resetGyro('z');
   }
   
-//  Serial.println(getAngle('z'));
+ // Serial.println(getAngle('z'));
   if(robotOn){
     if (firstStart) {
       FreqCount.end();
@@ -228,8 +234,10 @@ void loop() {
     }
 	
   	while(!foundFlame && digitalRead(flame_sensor)) {
-		// naviguessMaze(0.3);
-       ultrasonicCheck();
+		naviguessMaze(0.3);
+		// Serial.println(getAngle());
+       // ultrasonicCheck();
+	   // ultrasonicArrayCheck();
       // drivetrainCheck();
       
 //      if (!pidEnabled) {
@@ -241,7 +249,7 @@ void loop() {
 
   	}
 	
-  	// foundFlame = true;
+  	foundFlame = true;
   	// digitalWrite(FLAME_LED, foundFlame);
 	digitalWrite(FLAME_LED, true);
   	hDrive(0.0, 0.0, 0.0);
@@ -250,21 +258,7 @@ void loop() {
 		pulseFan();
 		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
 	}
-	
-  	// while (frontUltrasonic.getDistance() > 0.5) {
-  		// hDrive(0.3, 0.0, 0.0);
-  		// // extingusher_servo.write(110);
-  		// delay(600);
-  		// // extingusher_servo.write(70);
-  		// // delay(600);
-  		// // hDrive(0.0, 0.0, 0.0);
-  		// // delay(200);
-  		// digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
-  	// }
-
-	  // hDrive(0.0, 0.0, 0.0);
-  }
-  else{
+  } else{
     digitalWrite(SOUND_LED, LOW);
     firstStart = false;
     hDrive(0.0, 0.0, 0.0);
@@ -277,7 +271,7 @@ void pulseFan() {
 	fan_motor.set(1.0);
 	delay(3000);
 	fan_motor.set(0.0);
-	delay(1500);
+	delay(500);
 }
 
 void hDrive(double move, double rotate, double strafe) {
@@ -443,11 +437,11 @@ double getPercentError(double actual, double target) {
 
 void turnToAngle(double targetAngle, double speed) {
   resetGyro('z');
-  
+  // resetEncoders();
   hDrive(0.0, speed, 0.0);
   
   while (abs(getAngle('z')) < abs(targetAngle)) {
-    // Serial.println(getAngle('z'));
+    Serial.println(getAngle('z'));
   }
   
   hDrive(0.0, 0.0, 0.0);
@@ -567,15 +561,17 @@ void naviguessMaze(double swagSpeed) {
 	} else if (backTriggered) {
 		hDrive(swagSpeed, swagSpeed, 0.0);
 	} else if(rightFavor) {
-    turnToAngle(-2, swagSpeed);
-  } else if(rightInner || rightOuter && ! frontTriggered) {
-    hDrive(-swagSpeed, 0.0, 0.0);
-    delay(100);
-    turnToAngle(-15, swagSpeed);
-  } else if(leftInner || leftOuter && !frontTriggered) {
-    hDrive(-swagSpeed, 0.0, 0.0);
-    delay(100);
-    turnToAngle(15, -swagSpeed);
+		hDrive(0.0, 0.0, swagSpeed);
+		while (rightUltrasonic.getDistance() > 2.5) { }
+		hDrive(0.0, 0.0, 0.0);
+  // } else if(rightInner || rightOuter && !frontTriggered) {
+		// hDrive(-swagSpeed, 0.0, 0.0);
+		// delay(100);
+    // turnToAngle(-15, swagSpeed);
+  // } else if(leftInner || leftOuter && !frontTriggered) {
+		// hDrive(-swagSpeed, 0.0, 0.0);
+		// delay(100);
+		// turnToAngle(15, -swagSpeed);
   } else {
 		hDrive(swagSpeed, 0.0, 0.0);
 	}
