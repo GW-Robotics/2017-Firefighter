@@ -60,6 +60,7 @@ void definedStartSearch();
 double getPercentError(double actual, double target);
 void turnToAngle(double targetAngle, double speed);
 void naviguessMaze(double swagSpeed);
+void driveToDistance(double targetDistance, double speed);
 
 // Encoder commands
 void countPulseRight();
