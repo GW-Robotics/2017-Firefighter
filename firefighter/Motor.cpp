@@ -37,12 +37,12 @@ Motor::Motor(int in1, int in2) {
 void Motor::set(double speed) {
   if (speed > 0.0) {
     analogWrite(_in1, abs(speed) * 255);
-    digitalWrite(_in2, LOW);
+    analogWrite(_in2, 0);
   } else if (speed < 0.0) {
-    digitalWrite(_in1, LOW);
+    analogWrite(_in1, 0);
     analogWrite(_in2, abs(speed) * 255);
   } else {
-    digitalWrite(_in1, LOW);
-    digitalWrite(_in2, LOW);
+    analogWrite(_in1, 0);
+    analogWrite(_in2, 0);
   }
 }

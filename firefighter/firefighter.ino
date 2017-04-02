@@ -1,3 +1,4 @@
+
 #include "Ultrasonic.h"
 #include "ColorSensor.h"
 #include "Motor.h"
@@ -18,8 +19,8 @@
 #define WALL_DISTANCE 7
 
 #define flame_sensor 30
-#define servo_pin 31
-#define interval 10
+// #define servo_pin 31
+// #define interval 10
 
 #define LOW_START 3230
 #define HIGH_START 4370
@@ -31,7 +32,7 @@
 
 // PID
 #define setpoint 0
-#define kP 0.05
+#define kP 0.002
 
 Servo extingusher_servo;
 
@@ -49,17 +50,28 @@ Ultrasonic leftUltrasonic(26, 27, true);
 Ultrasonic rightUltrasonic(24, 25, true);
 Ultrasonic backUltrasonic(22, 23, true);
 
+//top ultrasonic array
+Ultrasonic leftArrayInner(34, 35, true);//blue
+Ultrasonic leftArrayOutter(32, 33, true);//orange
+
+Ultrasonic rightArrayInner(36, 37, true);//orange
+Ultrasonic rightArrayOutter(38, 39, true);//black
+
+void ultrasonicArrayCheck();
+
 MPU6050 mpu; // Default address 0x68
 
 // Drivetrain commands
 void driveToWhite();
 void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
+void pidMove(double move, double rotate, double strafe);
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed);
 void definedStartSearch();
 double getPercentError(double actual, double target);
 void turnToAngle(double targetAngle, double speed);
 void naviguessMaze(double swagSpeed);
+void driveToDistance(double targetDistance, double speed);
 
 // Encoder commands
 void countPulseRight();
@@ -150,8 +162,8 @@ void setup() {
   
   ri = -1;
 
-  extingusher_servo.attach(servo_pin);
-  extingusher_servo.write(90);
+  // extingusher_servo.attach(31);
+  // extingusher_servo.write(90);
 
   mpu.initialize();
   pinMode(INTERRUPT_PIN, INPUT);
@@ -186,11 +198,19 @@ void setup() {
 
   resetGyro('z');
 
+  hDrive(0.0, 0.0, 0.0);
+  fan_motor.set(0.0);
+  
   FreqCount.begin(1000);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  
 }
 
 bool firstStart = false;
 bool foundFlame = false;
+
+double heading = 0;
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -200,6 +220,7 @@ void loop() {
   } else {
     count = 0;
   }
+  
 //  Serial.println(getAngle('z'));
   if ((count > 3230 && count < 4370) || digitalRead(startSwitch)) {
     digitalWrite(SOUND_LED, HIGH);
@@ -208,7 +229,7 @@ void loop() {
     resetGyro('z');
   }
   
-//  Serial.println(getAngle('z'));
+ // Serial.println(getAngle('z'));
   if(robotOn){
     if (firstStart) {
       FreqCount.end();
@@ -216,42 +237,33 @@ void loop() {
     }
 	
   	while(!foundFlame && digitalRead(flame_sensor)) {
-  		// naviguessMaze(0.3);
-  		// followWall(1.0);
-       ultrasonicCheck();
+		naviguessMaze(0.3);
+		// Serial.println(getAngle());
+       // ultrasonicCheck();
+	   ultrasonicArrayCheck();
       // drivetrainCheck();
       
-//      if (!pidEnabled) {
-//        pidEnabled = true;
-//        resetGyro('z');
-//      }
-//      hDrive(0.5, getPidOutput(), 0.0);   // Correctional driving
-//      Serial.println(getPidOutput());
-
+		// hDrive(0.3, 0.0, 0.0);
   	}
 	
   	foundFlame = true;
-  	digitalWrite(FLAME_LED, foundFlame);
-  	
-  	fan_motor.set(1.0);
-  	
+  	// digitalWrite(FLAME_LED, foundFlame);
+	digitalWrite(FLAME_LED, true);
   	hDrive(0.0, 0.0, 0.0);
-  	delay(100);
-	
-  	while (frontUltrasonic.getDistance() > 0.5) {
-  		hDrive(0.3, 0.0, 0.0);
-  		extingusher_servo.write(110);
-  		delay(600);
-  		extingusher_servo.write(70);
-  		delay(600);
-  		hDrive(0.0, 0.0, 0.0);
-  		delay(200);
+
+  fan_motor.set(1.0);
+  
+  	while (true) {
+  //		pulseFan();
+      if (frontUltrasonic.getDistance() > 3) {
+          hDrive(0.3, 0.0, 0.0);
+          delay(200);
+          hDrive(0.0, 0.0, 0.0);
+          delay(400);
+      }
   		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
   	}
-
-	  hDrive(0.0, 0.0, 0.0);
-  }
-  else{
+  } else{
     digitalWrite(SOUND_LED, LOW);
     firstStart = false;
     hDrive(0.0, 0.0, 0.0);
@@ -260,15 +272,23 @@ void loop() {
 //  delay(100);
 }
 
+void pulseFan() {
+	fan_motor.set(1.0);
+	delay(3000);
+	fan_motor.set(0.0);
+  
+	delay(500);
+}
+
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
-  
-  move = constrain(move, -1.0, 1.0);
-  rotate = constrain(rotate, -1.0, 1.0);
-  strafe = constrain(strafe, -1.0, 1.0);
-
+	
+	move = constrain(move, -1.0, 1.0);
+	rotate = constrain(rotate, -1.0, 1.0);
+	strafe = constrain(strafe, -1.0, 1.0);
+	
   if (move > 0.0) {
-    if (rotate > 0.0) {
+	  if (rotate > 0.0) {
       leftSpeed =  move - rotate;
       rightSpeed = max(move, rotate);
     } else {
@@ -292,6 +312,22 @@ void hDrive(double move, double rotate, double strafe) {
   strafeMotor.set(strafe);
 }
 
+
+//  void pidMove(double move, double rotate, double strafe) {
+//     if (rotate == 0.0 && move != 0.0) {
+//       if (!pidEnabled) {
+//         pidEnabled = true;
+//         heading = getAngle('z');
+//       } else {
+//         hDrive(move, getPidOutput(), 0.0);   // Correctional driving
+//       }
+//     } else {
+//       pidEnabled = false;
+//       hDrive(move, rotate, strafe);
+//     }
+//     }
+//  }
+
 void drivetrainCheck() {
   hDrive(0.3, 0.0, 0.0); delay(300); hDrive(-0.3, 0.0, 0.0); delay(300);
   hDrive(0.0, 0.3, 0.0); delay(300); hDrive(0.0, -0.3, 0.0); delay(300);
@@ -311,27 +347,26 @@ void ultrasonicCheck() {
 	delay(300);
 }
 
+void ultrasonicArrayCheck() {
+	Serial.println("====================================");
+	Serial.print("LI: ");
+	Serial.println(leftArrayInner.getDistance());
+	Serial.print("LO: ");
+	Serial.println(leftArrayOutter.getDistance());
+	Serial.print("RI: ");
+	Serial.println(rightArrayInner.getDistance());
+	Serial.print("RO: ");
+	Serial.println(rightArrayOutter.getDistance());
+	delay(300);
+}
+
+
 void driveToWhite() {
   int ri = colour_sensor.getColor('r');
-  int r = ri;
-//  int g = colour_sensor.getColor('g');
-//  int b = colour_sensor.getColor('b');
-//  String colour = String(ri) + " " + String(g) + " " + String(b);
-//  Serial.println(colour);
   hDrive(.3,0,0);
-  Serial.print("Initial: ");
-  Serial.println(ri);
   
-  while(r > ri - 70) { 
-    r = colour_sensor.getColor('r');
-//        String colour = String(r);
-//        Serial.println(colour);
-  }
+  while(colour_sensor.getColor('r') > ri - 70) { }
   
-  Serial.print("Final: ");
-  Serial.println(r);
-  
-//      Serial.println("Done");
   hDrive(0.0, 0.0, 0.0);
 }
 
@@ -423,8 +458,8 @@ double getPercentError(double actual, double target) {
 }
 
 void turnToAngle(double targetAngle, double speed) {
+  // resetGyro('z');
   resetEncoders();
-  
   hDrive(0.0, speed, 0.0);
   
   while (abs(getAngle()) < abs(targetAngle)) {
@@ -434,47 +469,59 @@ void turnToAngle(double targetAngle, double speed) {
   hDrive(0.0, 0.0, 0.0);
 }
 
+void driveToDistance(double targetDistance, double speed) {
+  resetEncoders();
+  
+  hDrive(speed, 0.0, 0.0);
+  
+  while (abs(getDistanceLeft()) < abs(targetDistance) && abs(getDistanceRight()) < abs(targetDistance) ) {
+    // Serial.println(getDistanceLeft());
+  }
+  
+  hDrive(0.0, 0.0, 0.0);
+}
+
 double getPidOutput() {
-  return (setpoint - getAngle('x')) * kP;
+  return (heading - getAngle('z')) * kP;
 }
 
-void extinguish() {
-  for(int i = 40; i <= 160; i += interval){
-    extingusher_servo.write(i);
-    delay(15*interval);//give time for servo to move
+// void extinguish() {
+  // for(int i = 40; i <= 160; i += interval){
+    // extingusher_servo.write(i);
+    // delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      digitalWrite(FLAME_LED, HIGH);
+    // if(!digitalRead(flame_sensor))
+      // digitalWrite(FLAME_LED, HIGH);
   
-    //turn on fan
-    fan_motor.set(1);
-    while(!digitalRead(flame_sensor)){
-      //while there is a fire
-      delay(1000);   
-    }
-    //turn off fan
-    fan_motor.set(0);
-    digitalWrite(FLAME_LED, LOW);  
-  }
+    // //turn on fan
+    // fan_motor.set(1);
+    // while(!digitalRead(flame_sensor)){
+      // //while there is a fire
+      // delay(1000);   
+    // }
+    // //turn off fan
+    // fan_motor.set(0);
+    // digitalWrite(FLAME_LED, LOW);  
+  // }
   
-  for(int i = 140; i >=20; i -= interval){
-    extingusher_servo.write(i);
-    delay(15*interval);//give time for servo to move
+  // for(int i = 140; i >=20; i -= interval){
+    // extingusher_servo.write(i);
+    // delay(15*interval);//give time for servo to move
 
-    if(!digitalRead(flame_sensor))
-      digitalWrite(FLAME_LED, HIGH);
+    // if(!digitalRead(flame_sensor))
+      // digitalWrite(FLAME_LED, HIGH);
   
-    //turn on fan
-    fan_motor.set(1);
-    while(!digitalRead(flame_sensor)){
-      //while there is a fire
-      delay(1000);   
-    }
-    //turn off fan
-    fan_motor.set(0);
-    digitalWrite(FLAME_LED, LOW);  
-  }
-}
+    // //turn on fan
+    // fan_motor.set(1);
+    // while(!digitalRead(flame_sensor)){
+      // //while there is a fire
+      // delay(1000);   
+    // }
+    // //turn off fan
+    // fan_motor.set(0);
+    // digitalWrite(FLAME_LED, LOW);  
+  // }
+// }
 
 bool direction = true;
 int leftTurns = 0;
@@ -482,9 +529,17 @@ int rightTurns = 0;
 
 void naviguessMaze(double swagSpeed) {
 	bool frontTriggered = frontUltrasonic.getDistance() < 2;
-	bool leftTriggered = leftUltrasonic.getDistance() < 3;
-	bool rightTriggered = rightUltrasonic.getDistance() < 3;
+	bool leftTriggered = leftUltrasonic.getDistance() < 2;
+	bool rightTriggered = rightUltrasonic.getDistance() < 2;
 	bool backTriggered = backUltrasonic.getDistance() < 2;
+  bool rightFavor = rightUltrasonic.getDistance() <7 && rightUltrasonic.getDistance() > 2 && frontUltrasonic.getDistance() < 20;
+  bool rightInner = rightArrayInner.getDistance() < 7;
+  bool rightOuter = rightArrayOutter.getDistance() < 5;
+  bool leftInner = leftArrayInner.getDistance() < 7;
+  bool leftOuter = leftArrayOutter.getDistance() < 5;
+  int trial = 0; 
+  
+
 	
 	if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
@@ -512,10 +567,10 @@ void naviguessMaze(double swagSpeed) {
 		}
 	} else if (leftTriggered && !frontTriggered) {
 		// hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
-		turnToAngle(2, -swagSpeed);
+		turnToAngle(1, -swagSpeed);
 	} else if (rightTriggered && !frontTriggered) {
 		//hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
-		turnToAngle(-2, swagSpeed);
+		turnToAngle(-1, swagSpeed);
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
@@ -530,7 +585,19 @@ void naviguessMaze(double swagSpeed) {
 		// rightTurns++;
 	} else if (backTriggered) {
 		hDrive(swagSpeed, swagSpeed, 0.0);
-	} else {
+	} else if(rightFavor) {
+		hDrive(0.0, 0.0, swagSpeed);
+		while (rightUltrasonic.getDistance() > 2.5) { }
+		hDrive(0.0, 0.0, 0.0);
+   }  if(rightInner  ) {
+		 hDrive(-swagSpeed, 0.0, 0.0);
+		 delay(1000);
+    // turnToAngle(-15, swagSpeed);
+  // } else if(leftInner || leftOuter && !frontTriggered) {
+		// hDrive(-swagSpeed, 0.0, 0.0);
+		// delay(100);
+		// turnToAngle(15, -swagSpeed);
+  } else {
 		hDrive(swagSpeed, 0.0, 0.0);
 	}
 	
@@ -543,6 +610,7 @@ void naviguessMaze(double swagSpeed) {
 	direction = !direction;
 	
 	delay(50);
+
 }
 
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed) {
@@ -627,14 +695,13 @@ double getAngle(char axis) {
 void resetGyro(char axis) {
   switch (axis) {
     case 'x':
-      gyroResetValX += getAngle('x');
+      gyroResetValX = getAngle('x');
       break;
     case 'y':
-      gyroResetValY += getAngle('y');
+      gyroResetValY = getAngle('y');
       break;
     case 'z':
-      gyroResetValZ += getAngle('z');
+      gyroResetValZ = getAngle('z');
       break;
   }
 }
-
