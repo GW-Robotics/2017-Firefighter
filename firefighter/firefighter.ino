@@ -55,7 +55,7 @@ Ultrasonic leftArrayInner(34, 35, true);//blue
 Ultrasonic leftArrayOutter(32, 33, true);//orange
 
 Ultrasonic rightArrayInner(36, 37, true);//orange
-Ultrasonic fightArrayOutter(38, 39, true);//black
+Ultrasonic rightArrayOutter(38, 39, true);//black
 
 MPU6050 mpu; // Default address 0x68
 
@@ -495,6 +495,10 @@ void naviguessMaze(double swagSpeed) {
 	bool rightTriggered = rightUltrasonic.getDistance() < 2;
 	bool backTriggered = backUltrasonic.getDistance() < 2;
   bool rightFavor = rightUltrasonic.getDistance() <7 && rightUltrasonic.getDistance() > 2 && frontUltrasonic.getDistance() < 20;
+  bool rightInner = rightArrayInner.getDistance() < 5;
+  bool rightOuter = rightArrayOutter.getDistance() < 5;
+  bool leftInner = leftArrayInner.getDistance() < 5;
+  bool leftOuter = leftArrayOutter.getDistance() < 5;
 	
 	if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
@@ -542,7 +546,15 @@ void naviguessMaze(double swagSpeed) {
 		hDrive(swagSpeed, swagSpeed, 0.0);
 	} else if(rightFavor) {
     turnToAngle(-2, swagSpeed);
-	} else {
+  } else if(rightInner || rightOuter && ! frontTriggered) {
+    hDrive(-swagSpeed, 0.0, 0.0);
+    delay(100);
+    turnToAngle(-15, swagSpeed);
+  } else if(leftInner || leftOuter && !frontTriggered) {
+    hDrive(-swagSpeed, 0.0, 0.0);
+    delay(100);
+    turnToAngle(15, -swagSpeed);
+  } else {
 		hDrive(swagSpeed, 0.0, 0.0);
 	}
 	
