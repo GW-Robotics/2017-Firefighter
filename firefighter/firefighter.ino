@@ -29,6 +29,9 @@
 
 #define INTERRUPT_PIN 2
 
+#define setpoint 0
+#define kP 0.05
+
 Servo extingusher_servo;
 
 Motor leftMotor1(LEFT_MOTOR_1A, LEFT_MOTOR_1B);
@@ -53,7 +56,7 @@ void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed);
 void definedStartSearch();
-double getAngle(double targetAngle);
+double getAngle();
 double getAngle(char axis);
 double getPercentError(double actual, double target);
 void turnToAngle(double targetAngle, double speed);
@@ -406,6 +409,10 @@ void turnToAngle(double targetAngle, double speed) {
   }
   
   hDrive(0.0, 0.0, 0.0);
+}
+
+double getPidOutput() {
+  return (setpoint - getAngle('x')) * kP;
 }
 
 void extinguish() {
