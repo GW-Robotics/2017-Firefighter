@@ -32,7 +32,7 @@
 
 // PID
 #define setpoint 0
-#define kP 0.05
+#define kP 0.002
 
 Servo extingusher_servo;
 
@@ -65,6 +65,7 @@ MPU6050 mpu; // Default address 0x68
 void driveToWhite();
 void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
+void pidMove(double move, double rotate, double strafe);
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed);
 void definedStartSearch();
 double getPercentError(double actual, double target);
@@ -209,6 +210,8 @@ void setup() {
 bool firstStart = false;
 bool foundFlame = false;
 
+double heading = 0;
+
 void loop() {
   // put your main code here, to run repeatedly:
   if (FreqCount.available()) {
@@ -237,27 +240,29 @@ void loop() {
 		naviguessMaze(0.3);
 		// Serial.println(getAngle());
        // ultrasonicCheck();
-	   // ultrasonicArrayCheck();
+	   ultrasonicArrayCheck();
       // drivetrainCheck();
       
-//      if (!pidEnabled) {
-//        pidEnabled = true;
-//        resetGyro('z');
-//      }
-//      hDrive(0.5, getPidOutput(), 0.0);   // Correctional driving
-//      Serial.println(getPidOutput());
-
+		// hDrive(0.3, 0.0, 0.0);
   	}
 	
   	foundFlame = true;
   	// digitalWrite(FLAME_LED, foundFlame);
 	digitalWrite(FLAME_LED, true);
   	hDrive(0.0, 0.0, 0.0);
-	
-	while (true) {
-		pulseFan();
-		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
-	}
+
+  fan_motor.set(1.0);
+  
+  	while (true) {
+  //		pulseFan();
+      if (frontUltrasonic.getDistance() > 3) {
+          hDrive(0.3, 0.0, 0.0);
+          delay(200);
+          hDrive(0.0, 0.0, 0.0);
+          delay(400);
+      }
+  		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
+  	}
   } else{
     digitalWrite(SOUND_LED, LOW);
     firstStart = false;
@@ -271,18 +276,19 @@ void pulseFan() {
 	fan_motor.set(1.0);
 	delay(3000);
 	fan_motor.set(0.0);
+  
 	delay(500);
 }
 
 void hDrive(double move, double rotate, double strafe) {
   double leftSpeed, rightSpeed;
-  
-  move = constrain(move, -1.0, 1.0);
-  rotate = constrain(rotate, -1.0, 1.0);
-  strafe = constrain(strafe, -1.0, 1.0);
-
+	
+	move = constrain(move, -1.0, 1.0);
+	rotate = constrain(rotate, -1.0, 1.0);
+	strafe = constrain(strafe, -1.0, 1.0);
+	
   if (move > 0.0) {
-    if (rotate > 0.0) {
+	  if (rotate > 0.0) {
       leftSpeed =  move - rotate;
       rightSpeed = max(move, rotate);
     } else {
@@ -305,6 +311,22 @@ void hDrive(double move, double rotate, double strafe) {
   rightMotor2.set(-constrain(rightSpeed, -1.0, 1.0));
   strafeMotor.set(strafe);
 }
+
+
+//  void pidMove(double move, double rotate, double strafe) {
+//     if (rotate == 0.0 && move != 0.0) {
+//       if (!pidEnabled) {
+//         pidEnabled = true;
+//         heading = getAngle('z');
+//       } else {
+//         hDrive(move, getPidOutput(), 0.0);   // Correctional driving
+//       }
+//     } else {
+//       pidEnabled = false;
+//       hDrive(move, rotate, strafe);
+//     }
+//     }
+//  }
 
 void drivetrainCheck() {
   hDrive(0.3, 0.0, 0.0); delay(300); hDrive(-0.3, 0.0, 0.0); delay(300);
@@ -436,12 +458,12 @@ double getPercentError(double actual, double target) {
 }
 
 void turnToAngle(double targetAngle, double speed) {
-  resetGyro('z');
-  // resetEncoders();
+  // resetGyro('z');
+  resetEncoders();
   hDrive(0.0, speed, 0.0);
   
-  while (abs(getAngle('z')) < abs(targetAngle)) {
-    Serial.println(getAngle('z'));
+  while (abs(getAngle()) < abs(targetAngle)) {
+    Serial.println(getAngle());
   }
   
   hDrive(0.0, 0.0, 0.0);
@@ -460,7 +482,7 @@ void driveToDistance(double targetDistance, double speed) {
 }
 
 double getPidOutput() {
-  return (setpoint - getAngle('x')) * kP;
+  return (heading - getAngle('z')) * kP;
 }
 
 // void extinguish() {
@@ -511,10 +533,13 @@ void naviguessMaze(double swagSpeed) {
 	bool rightTriggered = rightUltrasonic.getDistance() < 2;
 	bool backTriggered = backUltrasonic.getDistance() < 2;
   bool rightFavor = rightUltrasonic.getDistance() <7 && rightUltrasonic.getDistance() > 2 && frontUltrasonic.getDistance() < 20;
-  bool rightInner = rightArrayInner.getDistance() < 5;
+  bool rightInner = rightArrayInner.getDistance() < 7;
   bool rightOuter = rightArrayOutter.getDistance() < 5;
-  bool leftInner = leftArrayInner.getDistance() < 5;
+  bool leftInner = leftArrayInner.getDistance() < 7;
   bool leftOuter = leftArrayOutter.getDistance() < 5;
+  int trial = 0; 
+  
+
 	
 	if (leftTriggered && frontTriggered) {
 		hDrive(-swagSpeed, 0.0, 0.0);
@@ -542,10 +567,10 @@ void naviguessMaze(double swagSpeed) {
 		}
 	} else if (leftTriggered && !frontTriggered) {
 		// hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
-		turnToAngle(2, -swagSpeed);
+		turnToAngle(1, -swagSpeed);
 	} else if (rightTriggered && !frontTriggered) {
 		//hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
-		turnToAngle(-2, swagSpeed);
+		turnToAngle(-1, swagSpeed);
 	} else if (frontTriggered && !rightTriggered & !leftTriggered){
 		hDrive(-swagSpeed, 0.0, 0.0);
 		delay(50);
@@ -564,9 +589,9 @@ void naviguessMaze(double swagSpeed) {
 		hDrive(0.0, 0.0, swagSpeed);
 		while (rightUltrasonic.getDistance() > 2.5) { }
 		hDrive(0.0, 0.0, 0.0);
-  // } else if(rightInner || rightOuter && !frontTriggered) {
-		// hDrive(-swagSpeed, 0.0, 0.0);
-		// delay(100);
+   }  if(rightInner  ) {
+		 hDrive(-swagSpeed, 0.0, 0.0);
+		 delay(1000);
     // turnToAngle(-15, swagSpeed);
   // } else if(leftInner || leftOuter && !frontTriggered) {
 		// hDrive(-swagSpeed, 0.0, 0.0);
@@ -585,6 +610,7 @@ void naviguessMaze(double swagSpeed) {
 	direction = !direction;
 	
 	delay(50);
+
 }
 
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed) {
@@ -669,13 +695,13 @@ double getAngle(char axis) {
 void resetGyro(char axis) {
   switch (axis) {
     case 'x':
-      gyroResetValX += getAngle('x');
+      gyroResetValX = getAngle('x');
       break;
     case 'y':
-      gyroResetValY += getAngle('y');
+      gyroResetValY = getAngle('y');
       break;
     case 'z':
-      gyroResetValZ += getAngle('z');
+      gyroResetValZ = getAngle('z');
       break;
   }
 }
