@@ -12,7 +12,7 @@
     #include "Wire.h"
 #endif
 
-#define SOUND_LED 43
+#define SOUND_LED 45
 #define FLAME_LED 53
 
 #define WALL_DISTANCE 7
@@ -24,11 +24,12 @@
 #define LOW_START 3230
 #define HIGH_START 4370
 
-#define LEFT_MOTOR_1A 42
+#define LEFT_MOTOR_1A 44
 #define LEFT_MOTOR_1B 3
 
 #define INTERRUPT_PIN 2
 
+// PID
 #define setpoint 0
 #define kP 0.05
 
@@ -41,7 +42,7 @@ Motor rightMotor2(8, 9);
 Motor strafeMotor(10, 11);
 Motor fan_motor(12, 13);
 
-ColorSensor colour_sensor(44, 46, 48, 50, 52);
+ColorSensor colour_sensor(42, 46, 48, 50, 52);
 
 Ultrasonic frontUltrasonic(28, 29, true);
 Ultrasonic leftUltrasonic(26, 27, true);
@@ -56,8 +57,6 @@ void driveThroughRoom();
 void hDrive(double move, double rotate, double strafe);
 void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed);
 void definedStartSearch();
-double getAngle();
-double getAngle(char axis);
 double getPercentError(double actual, double target);
 void turnToAngle(double targetAngle, double speed);
 void naviguessMaze(double swagSpeed);
@@ -103,7 +102,15 @@ uint8_t fifoBuffer[64]; // FIFO storage buffer
 Quaternion q;           // [w, x, y, z]         quaternion container
 float euler[3];         // [psi, theta, phi]    Euler angle container
 
+double gyroResetValX;
+double gyroResetValY;
+double gyroResetValZ;
+void resetGyro(char axis);
+double getAngle(char axis);
+
 int ri;
+
+bool pidEnabled = false;
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -151,11 +158,14 @@ void setup() {
   
   devStatus = mpu.dmpInitialize();
 
+  // accel offsets
+  mpu.setXAccelOffset(-4265);
+  mpu.setYAccelOffset(-283);
+  mpu.setZAccelOffset(1675); // 1688 factory default for my test chip
   // supply your own gyro offsets here, scaled for min sensitivity
-  mpu.setXGyroOffset(220);
-  mpu.setYGyroOffset(76);
-  mpu.setZGyroOffset(-85);
-  mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+  mpu.setXGyroOffset(-51);
+  mpu.setYGyroOffset(40);
+  mpu.setZGyroOffset(27);
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
@@ -174,66 +184,80 @@ void setup() {
       packetSize = mpu.dmpGetFIFOPacketSize();
   }
 
+  resetGyro('z');
+
   FreqCount.begin(1000);
 }
 
-bool foundRoom = false;
+bool firstStart = false;
 bool foundFlame = false;
 
 void loop() {
   // put your main code here, to run repeatedly:
   if (FreqCount.available()) {
     count = FreqCount.read();
-	Serial.println(count);
+	  //Serial.println(count);
   } else {
     count = 0;
   }
-  
+//  Serial.println(getAngle('z'));
   if ((count > 3230 && count < 4370) || digitalRead(startSwitch)) {
     digitalWrite(SOUND_LED, HIGH);
+    firstStart = true;
     robotOn = !robotOn;
+    resetGyro('z');
   }
-
+  
+//  Serial.println(getAngle('z'));
   if(robotOn){
-    FreqCount.end();
-    // ultrasonicCheck();
-	// drivetrainCheck();
-	if (ri == -1) {
-		ri = colour_sensor.getColor('r');
-	}
+    if (firstStart) {
+      FreqCount.end();
+      ri = colour_sensor.getColor('r');
+    }
 	
-	while(!foundFlame && digitalRead(flame_sensor)) {
-		// naviguessMaze(0.3);
-		followWall(1.0);
-	}
-	
-	foundFlame = true;
-	digitalWrite(FLAME_LED, foundFlame);
-	
-	fan_motor.set(1.0);
-	
-	hDrive(0.0, 0.0, 0.0);
-	delay(100);
-	
-	while (frontUltrasonic.getDistance() > 0.5) {
-		hDrive(0.3, 0.0, 0.0);
-		extingusher_servo.write(110);
-		delay(600);
-		extingusher_servo.write(70);
-		delay(600);
-		hDrive(0.0, 0.0, 0.0);
-		delay(200);
-		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
-	}
+  	while(!foundFlame && digitalRead(flame_sensor)) {
+  		// naviguessMaze(0.3);
+  		// followWall(1.0);
+       ultrasonicCheck();
+      // drivetrainCheck();
+      
+//      if (!pidEnabled) {
+//        pidEnabled = true;
+//        resetGyro('z');
+//      }
+//      hDrive(0.5, getPidOutput(), 0.0);   // Correctional driving
+//      Serial.println(getPidOutput());
 
-	hDrive(0.0, 0.0, 0.0);
+  	}
+	
+  	foundFlame = true;
+  	digitalWrite(FLAME_LED, foundFlame);
+  	
+  	fan_motor.set(1.0);
+  	
+  	hDrive(0.0, 0.0, 0.0);
+  	delay(100);
+	
+  	while (frontUltrasonic.getDistance() > 0.5) {
+  		hDrive(0.3, 0.0, 0.0);
+  		extingusher_servo.write(110);
+  		delay(600);
+  		extingusher_servo.write(70);
+  		delay(600);
+  		hDrive(0.0, 0.0, 0.0);
+  		delay(200);
+  		digitalWrite(FLAME_LED, !digitalRead(flame_sensor));
+  	}
+
+	  hDrive(0.0, 0.0, 0.0);
   }
   else{
     digitalWrite(SOUND_LED, LOW);
+    firstStart = false;
     hDrive(0.0, 0.0, 0.0);
   }
 
-  delay(100);
+//  delay(100);
 }
 
 void hDrive(double move, double rotate, double strafe) {
@@ -309,7 +333,6 @@ void driveToWhite() {
   
 //      Serial.println("Done");
   hDrive(0.0, 0.0, 0.0);
-  foundRoom = true;
 }
 
 void driveThroughRoom() {
@@ -589,15 +612,29 @@ double getAngle(char axis) {
 
         switch (axis) {
           case 'x':
-            return euler[2] * 180/M_PI;
+            return (euler[2] * 180/M_PI) - gyroResetValX;
             break;
           case 'y':
-            return euler[1] * 180/M_PI;
+            return (euler[1] * 180/M_PI) - gyroResetValY;
             break;
           case 'z':
-            return euler[0] * 180/M_PI;
+            return (euler[0] * 180/M_PI) - gyroResetValZ;
             break;
         }
     }
+}
+
+void resetGyro(char axis) {
+  switch (axis) {
+    case 'x':
+      gyroResetValX += getAngle('x');
+      break;
+    case 'y':
+      gyroResetValY += getAngle('y');
+      break;
+    case 'z':
+      gyroResetValZ += getAngle('z');
+      break;
+  }
 }
 
