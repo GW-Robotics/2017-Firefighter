@@ -1,8 +1,0 @@
-Links to code for other sensors
-
-Dual H-Bridge DC Motor Control: http://deepaksinghviblog.blogspot.com/2014/08/raspberrypi-to-run-dc-motor-using-l298n.html
-
-MPU 6050
-  -Callibration: Second code block on http://wired.chillibasket.com/2015/01/calibrating-mpu6050/
-  -Simulations: https://diyhacking.com/arduino-mpu-6050-imu-sensor-tutorial/
-  -Library: Take MPU6050 files from this repo: https://github.com/jrowberg/i2cdevlib 
