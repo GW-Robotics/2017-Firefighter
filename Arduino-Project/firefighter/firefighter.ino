@@ -586,6 +586,66 @@ void naviguessMaze(double swagSpeed) {
       hDrive(swagSpeed, 0.0, 0.0);
     }
 
+//    if (leftTriggered && frontTriggered) {
+//    hDrive(-swagSpeed, 0.0, 0.0);
+//    delay(100);
+//    // hDrive(0.0, swagSpeed , 0.0);
+//    
+//    if (rightTurns == 4) {
+//      turnToAngle(-90, swagSpeed);
+//      rightTurns = 0;
+//    } else {
+//      turnToAngle(90, -swagSpeed);
+//      rightTurns++;
+//    }
+//  } else if (rightTriggered && frontTriggered) {
+//    hDrive(-swagSpeed, 0.0, 0.0);
+//    delay(100);
+//    // hDrive(0.0, -swagSpeed , 0.0);
+//    
+//    if (leftTurns == 4) {
+//      turnToAngle(-90, -swagSpeed);
+//      leftTurns = 0;
+//    } else {
+//      turnToAngle(-90, swagSpeed);
+//      leftTurns++;
+//    }
+//  } else if (leftTriggered && !frontTriggered) {
+//    // hDrive(swagSpeed - 0.2, -swagSpeed, 0.0);
+//    turnToAngle(1, -swagSpeed);
+//  } else if (rightTriggered && !frontTriggered) {
+//    //hDrive(swagSpeed - 0.2, swagSpeed , 0.0);
+//    turnToAngle(-1, swagSpeed);
+//  } else if (frontTriggered && !rightTriggered & !leftTriggered){
+//    hDrive(-swagSpeed, 0.0, 0.0);
+//    delay(50);
+//    if (rightTurns == 4) {
+//      turnToAngle(-90, swagSpeed);
+//      rightTurns = 0;
+//    } else {
+//      turnToAngle(90, -swagSpeed);
+//      rightTurns++;
+//    }
+//    // turnToAngle(90, -swagSpeed);
+//    // rightTurns++;
+//  } else if (backTriggered) {
+//    hDrive(swagSpeed, swagSpeed, 0.0);
+//  } else if(rightFavor) {
+//    hDrive(0.0, 0.0, swagSpeed);
+//    while (rightUltrasonic.getDistance() > 2.5) { }
+//    hDrive(0.0, 0.0, 0.0);
+//   }  if(rightInner  ) {
+//     hDrive(-swagSpeed, 0.0, 0.0);
+//     delay(1000);
+//    // turnToAngle(-15, swagSpeed);
+//  // } else if(leftInner || leftOuter && !frontTriggered) {
+//    // hDrive(-swagSpeed, 0.0, 0.0);
+//    // delay(100);
+//    // turnToAngle(15, -swagSpeed);
+//  } else {
+//    hDrive(swagSpeed, 0.0, 0.0);
+//  }
+
     if (direction) {
       strafeMotor.set(0.3);
     } else {
@@ -595,7 +655,6 @@ void naviguessMaze(double swagSpeed) {
     direction = !direction;
 
     delay(50);
-
   }
 
   void tankDrive(double leftSpeed, double rightSpeed, double strafeSpeed) {
