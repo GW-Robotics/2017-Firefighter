@@ -4,6 +4,7 @@ from gwrobolib.actuators import Motor
 from gwrobolib.robotdrive import RobotDrive
 
 from nanpy import ArduinoApi, SerialManager, Servo, Ultrasonic
+from nanpy.counter import Counter
 from time import sleep
 
 
@@ -17,12 +18,15 @@ except:
 
 
 class StatusLight(object):
-
+    LOW_START = 3230
+    HIGH_START = 4370
+    
     def __init__(self):
         #self.LED = robotmap.get_pin('o', 'flame-led')
         #self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
 
         self.activation_switch = LimitSwitch(robotmap.get_pin('i', 'activation-switch'))
+        self.counter = Counter()
         #Arduino.pinMode(self.LED, Arduino.OUTPUT)
 
     def activation_switch_pressed(self):
@@ -34,6 +38,9 @@ class StatusLight(object):
         #else:
         #    Arduino.digitalWrite(self.LED, Arduino.LOW)
         pass
+
+    def is_freq_start(self):
+        return self.counter.read_frequency() in range(self.LOW_START, self.HIGH_START)
         
 
 class SensorStick(object):
