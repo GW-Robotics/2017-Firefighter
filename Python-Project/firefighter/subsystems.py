@@ -88,16 +88,15 @@ class Drivetrain(object):
     target_side_wall_distance = 3
 
     def __init__(self):
-        self.drivetrain = RobotDrive(Motor(robotmap.get_pin('o', 'left-motor1a'), robotmap.get_pin('o', 'left-motor1b'), robotmap.get_pin('o', 'left-motor1p'))
-                                     , Motor(robotmap.get_pin('o', 'left-motor2a'), robotmap.get_pin('o', 'left-motor2b'), robotmap.get_pin('o', 'left-motor2p'))
-                                     , Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'), robotmap.get_pin('o', 'right-motor1p'))
-                                     , Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'), robotmap.get_pin('o', 'right-motor2p'))
-                                     , Motor(robotmap.get_pin('o', 'strafe-motora'), robotmap.get_pin('o', 'strafe-motorb'), robotmap.get_pin('o', 'strafe-motorp')))
+        self.drivetrain = RobotDrive(Motor(robotmap.get_pin('o', 'left-motor1a'), robotmap.get_pin('o', 'left-motor1b'))
+                                     , Motor(robotmap.get_pin('o', 'left-motor2a'), robotmap.get_pin('o', 'left-motor2b'))
+                                     , Motor(robotmap.get_pin('o', 'right-motor1a'), robotmap.get_pin('o', 'right-motor1b'))
+                                     , Motor(robotmap.get_pin('o', 'right-motor2a'), robotmap.get_pin('o', 'right-motor2b'))
+                                     , Motor(robotmap.get_pin('o', 'strafe-motora'), robotmap.get_pin('o', 'strafe-motorb')))
 
         self.front_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'front-ultrasonic-e'), robotmap.get_pin('i', 'front-ultrasonic-t'), True)
         self.left_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'left-ultrasonic-e'), robotmap.get_pin('i', 'left-ultrasonic-t'), True)
         self.right_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'right-ultrasonic-e'), robotmap.get_pin('i', 'right-ultrasonic-t'), True)
-        self.back_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'back-ultrasonic-e'), robotmap.get_pin('i', 'back-ultrasonic-t'), True)
 
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         self.drivetrain.h_drive(move_value, rotate_value, strafe_value)
