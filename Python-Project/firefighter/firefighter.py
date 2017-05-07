@@ -1,4 +1,4 @@
-from subsystems import Drivetrain, StatusLight
+from subsystems import Drivetrain, StatusLight, Extinguisher
 #from subsystems import SensorStick    # SEAS Innovation Challenge subsystems
 from time import sleep
 
@@ -16,8 +16,7 @@ from time import sleep
 drivetrain = Drivetrain()
 # sensor_stick = SensorStick()
 status_light = StatusLight()
-
-#testsystem = Test()
+extinguisher = Extinguisher()
 
 def drive_in_square():
     drivetrain.arcade_drive(1.0, 0.0, 0.0)
@@ -36,14 +35,12 @@ found_flame = False
 while (not (status_light.is_freq_start() or status_light.activation_switch_pressed())):
     pass
     
-while (not found_flame):
+while (not extinguisher.has_flame()):
     # TODO: naviguess maze
     pass
 
-found_flame = True
 drivetrain.stop()
-
-# TODO: fan_motor.set(1.0)
+extinguisher.on()
 
 while (True):
     # TODO: extinguish code

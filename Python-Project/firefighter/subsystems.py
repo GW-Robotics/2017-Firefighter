@@ -23,7 +23,6 @@ class StatusLight(object):
     
     def __init__(self):
         #self.LED = robotmap.get_pin('o', 'flame-led')
-        #self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
 
         self.activation_switch = LimitSwitch(robotmap.get_pin('i', 'activation-switch'))
         self.counter = Counter()
@@ -66,7 +65,22 @@ class SensorStick(object):
                 self.out = True
         else:
             pass
-        
+
+
+class Extinguisher(object):
+
+    def __init__(self):
+        self.extinguisher = Motor(robotmap.get_pin('o', 'extinguisher-a'), robotmap.get_pin('o', 'extinguisher-b'))
+        self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
+
+    def has_flame(self):
+        return self.flame_sensor.is_flame_detected()
+
+    def on(self):
+        self.extinguisher.set(1.0)
+
+    def off(self):
+        self.extinguisher.set(0.0)
 
 class Drivetrain(object):
 
