@@ -18,16 +18,6 @@ drivetrain = Drivetrain()
 status_light = StatusLight()
 extinguisher = Extinguisher()
 
-def drive_in_square():
-    drivetrain.arcade_drive(1.0, 0.0, 0.0)
-    sleep(1)
-    drivetrain.arcade_drive(0.0, 0.0, 1.0)
-    sleep(1)
-    drivetrain.arcade_drive(-1.0, 0.0, 0.0)
-    sleep(1)
-    drivetrain.arcade_drive(0.0, 0.0, -1.0)
-    sleep(1)
-
 robot_on = False
 found_flame = False
     
@@ -42,5 +32,5 @@ drivetrain.stop()
 extinguisher.on()
 
 while (True):
-    # TODO: extinguish code
+    drivetrain.pulse_to_distance(0.3, 3)
     pass

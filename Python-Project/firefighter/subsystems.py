@@ -107,6 +107,14 @@ class Drivetrain(object):
     def all_test(self, value):
         self.drivetrain.all_test(value)
 
+    def pulse_to_distance(self, speed, distance):
+        if self.front_ultrasonic.get_distance() > distance:
+            self.arcade_drive(speed, 0.0, 0.0)
+            sleep(0.2)
+
+        self.arcade_drive(0.0, 0.0, 0.0)
+        sleep(0.2)
+        
     def drive_to_front(self):
         self.arcade_drive(0.3, 0.0, 0.0)
         
