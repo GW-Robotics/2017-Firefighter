@@ -2,15 +2,15 @@ from subsystems import Drivetrain, StatusLight
 #from subsystems import SensorStick    # SEAS Innovation Challenge subsystems
 from time import sleep
 
-import multiprocessing
+#import multiprocessing
 
-def worker():
-    print "Robot in running"
-    return
+#def worker():
+#    print "Robot in running"
+#    return
 
-p = multiprocessing.Process(target=worker)
-p.start()
-p.join()
+#p = multiprocessing.Process(target=worker)
+#p.start()
+#p.join()
 
 # H-drive drivetrain
 drivetrain = Drivetrain()
@@ -29,16 +29,22 @@ def drive_in_square():
     drivetrain.arcade_drive(0.0, 0.0, -1.0)
     sleep(1)
 
+robot_on = False
+found_flame = False
+    
+# Equivalent to Arduino loop() method
 while (not (status_light.is_freq_start() or status_light.activation_switch_pressed())):
     pass
-
-sleep(2)
-print "Started!"
-
-while (not status_light.activation_switch_pressed()):
-    #sensor_stick.check_actuation()
-    #drivetrain.drive_to_front()
-    #drive_in_square()
-    pass
     
+while (not found_flame):
+    # TODO: naviguess maze
+    pass
+
+found_flame = True
 drivetrain.stop()
+
+# TODO: fan_motor.set(1.0)
+
+while (True):
+    # TODO: extinguish code
+    pass
