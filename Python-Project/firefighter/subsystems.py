@@ -101,6 +101,26 @@ class Drivetrain(object):
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         self.drivetrain.h_drive(move_value, rotate_value, strafe_value)
 
+    def drivetrain_check(self):
+        arcade_drive(0.3, 0.0, 0.0)
+        sleep(0.3)
+        arcade_drive(-0.3, 0.0, 0.0)
+        sleep(0.3)
+        arcade_drive(0.0, 0.3, 0.0)
+        sleep(0.3)
+        arcade_drive(0.0, -0.3, 0.0)
+        sleep(0.3)
+        arcade_drive(0.0, 0.0, 0.3)
+        sleep(0.3)
+        arcade_drive(0.0, 0.0, -0.3)
+        sleep(0.3)
+
+    def ultrasonic_check(self):
+        print "=" * 10
+        print "F: {}\n".format(self.front_ultrasonic.get_distance())
+        print "L: {}\n".format(self.left_ultrasonic.get_distance())
+        print "R: {}\n".format(self.right_ultrasonic.get_distance())
+
     def stop(self):
         self.drivetrain.stop()
 
