@@ -36,9 +36,8 @@ while (not (status_light.is_freq_start() or status_light.activation_switch_press
     pass
     
 while (not extinguisher.has_flame()):
-    # TODO: naviguess maze
-    pass
-
+    drivetrain.naviguess_maze(0.3)
+    
 drivetrain.stop()
 extinguisher.on()
 
