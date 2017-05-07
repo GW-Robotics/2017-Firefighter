@@ -32,15 +32,25 @@ class Motor(object):
         if not self.pwm == -1:
             Arduino.analogWrite(self.pwm, 255 * abs(speed))
             
-        if speed > 0.0:
-            Arduino.digitalWrite(self.pinA, Arduino.HIGH)
-            Arduino.digitalWrite(self.pinB, Arduino.LOW)
-        elif speed < 0.0:
-            Arduino.digitalWrite(self.pinA, Arduino.LOW)
-            Arduino.digitalWrite(self.pinB, Arduino.HIGH)
+            if speed > 0.0:
+                Arduino.digitalWrite(self.pinA, Arduino.HIGH)
+                Arduino.digitalWrite(self.pinB, Arduino.LOW)
+            elif speed < 0.0:
+                Arduino.digitalWrite(self.pinA, Arduino.LOW)
+                Arduino.digitalWrite(self.pinB, Arduino.HIGH)
+            else:
+                Arduino.digitalWrite(self.pinA, Arduino.LOW)
+                Arduino.digitalWrite(self.pinB, Arduino.LOW)
         else:
-            Arduino.digitalWrite(self.pinA, Arduino.LOW)
-            Arduino.digitalWrite(self.pinB, Arduino.LOW)
+            if speed > 0.0:
+                Arduino.analogWrite(self.pinA, abs(speed) * 255)
+                Arduino.analogWrite(self.pinB, 0.0)
+            elif speed < 0.0:
+                Arduino.analogWrite(self.pinA, 0.0)
+                Arduino.analogWrite(self.pinB, abs(speed) * 255)
+            else:
+                Arduino.analogWrite(self.pinA, 0.0)
+                Arduino.analogWrite(self.pinB, 0.0)
 
 class Solenoid(object):
 
