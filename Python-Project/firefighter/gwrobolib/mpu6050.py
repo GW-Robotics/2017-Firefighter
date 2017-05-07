@@ -83,7 +83,7 @@ class mpu6050:
     def get_temp(self):
         """Reads the temperature from the onboard temperature sensor of the MPU-6050.
 
-        Returns the temperature in degrees Celcius.
+        Returns the temperature in 	s Celcius.
         """
         raw_temp = self.read_i2c_word(self.TEMP_OUT0)
 
@@ -231,7 +231,7 @@ class mpu6050:
         y = y / gyro_scale_modifier
         z = z / gyro_scale_modifier
 
-        return {'x': x, 'y': y, 'z': z}
+        return [x,y,z]
 
     def get_all_data(self):
         """Reads and returns all the available data."""
