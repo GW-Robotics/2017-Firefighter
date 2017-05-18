@@ -2,6 +2,7 @@ from gwrobolib import robotmap, robotmath
 from gwrobolib.sensors import FlameSensor, LimitSwitch
 from gwrobolib.actuators import Motor
 from gwrobolib.robotdrive import RobotDrive
+#from gwrobolib.mpu6050 import mpu6050
 
 from nanpy import ArduinoApi, SerialManager, Servo, Ultrasonic
 from nanpy.counter import Counter
@@ -97,22 +98,23 @@ class Drivetrain(object):
         self.front_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'front-ultrasonic-e'), robotmap.get_pin('i', 'front-ultrasonic-t'), True)
         self.left_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'left-ultrasonic-e'), robotmap.get_pin('i', 'left-ultrasonic-t'), True)
         self.right_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'right-ultrasonic-e'), robotmap.get_pin('i', 'right-ultrasonic-t'), True)
+#        self.mpu6050 = mpu6050(0x68)
 
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         self.drivetrain.h_drive(move_value, rotate_value, strafe_value)
 
     def drivetrain_check(self):
-        arcade_drive(0.3, 0.0, 0.0)
+        self.arcade_drive(0.3, 0.0, 0.0)
         sleep(0.3)
-        arcade_drive(-0.3, 0.0, 0.0)
+        self.arcade_drive(-0.3, 0.0, 0.0)
         sleep(0.3)
-        arcade_drive(0.0, 0.3, 0.0)
+        self.arcade_drive(0.0, 0.3, 0.0)
         sleep(0.3)
-        arcade_drive(0.0, -0.3, 0.0)
+        self.arcade_drive(0.0, -0.3, 0.0)
         sleep(0.3)
-        arcade_drive(0.0, 0.0, 0.3)
+        self.arcade_drive(0.0, 0.0, 0.3)
         sleep(0.3)
-        arcade_drive(0.0, 0.0, -0.3)
+        self.arcade_drive(0.0, 0.0, -0.3)
         sleep(0.3)
 
     def ultrasonic_check(self):
@@ -143,11 +145,30 @@ class Drivetrain(object):
 
         self.stop()
 
+    def turn_to_angle(target, speed):
+        arcade_drive(0, speed, 0)
+        
+        while( abs(get_angle) < target_angle):
+            pass
+        
+        arcade_drive(0, 0, 0)
+
+    def get_angle( axis ):
+        pass
+        #gyro_value = mpu.get_gyro_data()
+        
+        #return {
+        #    'x': gyro_value[0],
+        #    'y': gyro_value[1],
+        #    'z': gyro_value[2],
+        #}.get(axis, None)
+
+        
     def naviguess_maze(speed):
         front_triggered = front_ultrasonic.get_distance() < 2
         left_triggered = left_ultrasonic.get_distance() < 2
         right_triggered = right_ultrasonic.get_distance() < 2
-        right_favor = right_ultrasonic.get_distance() < 7 && right_ultrasonic.get_distance() > 2 && front_ultrasonic.get_distance()  <  20
+        right_favor = (right_ultrasonic.get_distance() < 7) and (right_ultrasonic.get_distance() > 2) and (front_ultrasonic.get_distance()  <  20)
 
         direction = True
         left_turns = 0
@@ -163,25 +184,25 @@ class Drivetrain(object):
                     right_turns = 0
                 else:
                     turn_to_angle(90, -speed)
-                    right_turns++
-            else if right_triggered:
+                    right_turns = right_turns + 1
+            elif right_triggered:
                 if left_turns == 4:
                     turn_to_angle(-90, -speed)
                     left_turns = 0
                 else:
                     turn_to_angle(-90, speed)
-                    left_turns++
+                    left_turns = left_turns + 1
             else:
                 if right_turns == 4:
                     turn_to_angle(-90, speed)
                     right_turns = 0
                 else:
                     turn_to_angle(90, -speed)
-                    right_turns++
+                    right_turns = right_turns + 1
         else:
             if left_triggered:
                 turn_to_angle(1, -speed)
-            else if right_favored:
+            elif right_favored:
                 arcade_drive(0, 0, speed)
                 while right_ultrasonic.get_distance() > 2.5:
                     pass
@@ -195,6 +216,6 @@ class Drivetrain(object):
         else:
             arcade_drive(0, -0.3, 0)
 
-        direction = !direction
+        direction = not direction
 
         sleep(0.05)
