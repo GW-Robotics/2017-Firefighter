@@ -72,7 +72,7 @@ class Extinguisher(object):
     def __init__(self):
         self.extinguisher = Servo(robotmap.get_pin('o', 'sensor-stick-servo'), connection)
         self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
-
+		self.extinguisher.write(120)
     def has_flame(self):
         return self.flame_sensor.is_flame_detected()
 		
@@ -80,12 +80,12 @@ class Extinguisher(object):
 		return self.servo.read()
 		
     def on(self):
-        #rotate servo to 30 degree
-		self.servo.write(30)
+        if self.servo_position() is not 0:
+			self.servo.write(0)
 
     def off(self):
-		if self.servo_position() is not 0:
-			self.servo.write(0)
+		if self.servo_position() is not 120:
+			self.servo.write(120)
 
 class Drivetrain(object):
 
