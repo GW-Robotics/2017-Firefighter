@@ -82,6 +82,9 @@ class Extinguisher(object):
     def on(self):
         if self.servo_position() is not 0:
 			self.servo.write(0)
+		while self.has_flame():
+			pass
+		self.off()
 
     def off(self):
 		if self.servo_position() is not 120:
@@ -102,10 +105,20 @@ class Drivetrain(object):
         self.front_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'front-ultrasonic-e'), robotmap.get_pin('i', 'front-ultrasonic-t'), True)
         self.left_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'left-ultrasonic-e'), robotmap.get_pin('i', 'left-ultrasonic-t'), True)
         self.right_ultrasonic = Ultrasonic(robotmap.get_pin('i', 'right-ultrasonic-e'), robotmap.get_pin('i', 'right-ultrasonic-t'), True)
+		self.flame_sensor = FlameSensor(robotmap.get_pin('i', 'flame-sensor'))
 
     def arcade_drive(self, move_value, rotate_value, strafe_value):
         self.drivetrain.h_drive(move_value, rotate_value, strafe_value)
-
+	def scan_room(self):
+		turns = 0
+		while self.flame_sensor.is_flame_detected() is False and turns < 5:
+			arcade_drive(0.0, 0.3, 0.0)
+			sleep(.3)
+			turns = turns + 1
+		if flame_sensor.is_flame_detected()
+			extinguisher = Extinguisher()
+			extinguisher.on
+			
     def drivetrain_check(self):
         arcade_drive(0.3, 0.0, 0.0)
         sleep(0.3)
